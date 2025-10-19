@@ -6,23 +6,23 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateIpRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
-    {
+    public function authorize(): bool { return true; }
+    public function rules(): array {
         return [
-            //
+            'title'           => ['required','string','max:255'],
+            'application_no'  => ['nullable','string','max:255'],
+            'type'            => ['required','string','max:100'],
+            'status'          => ['nullable','string','max:100'],
+            'applicant_name'  => ['nullable','string','max:255'],
+            'faculty'         => ['nullable','string','max:255'],
+            'research_title'  => ['nullable','string','max:255'],
+            'budget_year'     => ['nullable','integer','between:2400,2700'], // รองรับ พ.ศ.
+            'funding_source'  => ['nullable','string','max:255'],
+            'submitter_name'  => ['nullable','string','max:255'],
+            'certificate_no'  => ['nullable','string','max:255'],
+            'certificate'     => ['nullable','file','mimes:pdf,jpg,jpeg,png','max:8192'],
+            'remark'          => ['nullable','string'],
+            'is_published'    => ['sometimes','boolean'],
         ];
     }
 }

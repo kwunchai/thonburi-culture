@@ -108,11 +108,11 @@
                         </a>
                     </li>
 
-                    {{-- ข้อมูลทรัพย์สินทางปัญญา --}}
+                    {{-- ทรัพย์สินทางปัญญา --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.ip.index') }}" 
                             class="nav-link {{ request()->routeIs('admin.ip.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-certificate"></i><p>ข้อมูลทรัพย์สินทางปัญญา</p>
+                            <i class="nav-icon fas fa-certificate"></i><p>ทรัพย์สินทางปัญญา</p>
                         </a>
                     </li>
 

@@ -19,7 +19,8 @@ class IntellectualPropertyController extends Controller
         if ($kw = $req->string('q')->toString()) {
             $q->where(function($w) use ($kw){
                 $w->where('title','like',"%$kw%")
-                  ->orWhere('application_no','like',"%$kw%");
+                  ->orWhere('application_no','like',"%$kw%")
+                  ->orWhere('applicant_name','like',"%$kw%");
             });
         }
         $items = $q->latest('id')->paginate(20)->withQueryString();
