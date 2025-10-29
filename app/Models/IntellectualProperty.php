@@ -19,6 +19,14 @@ class IntellectualProperty extends Model
     protected $primaryKey = 'ip_id';
 
     /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'ip_id';
+    }
+
+    /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
@@ -91,15 +99,15 @@ class IntellectualProperty extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            if (auth()->check()) {
-                $model->created_by = auth()->id();
-                $model->owner_id = $model->owner_id ?? auth()->id();
+            if (Auth::check()) {
+                $model->created_by = Auth::id();
+                $model->owner_id = $model->owner_id ?? Auth::id();
             }
         });
 
         static::updating(function ($model) {
-            if (auth()->check()) {
-                $model->updated_by = auth()->id();
+            if (Auth::check()) {
+                $model->updated_by = Auth::id();
             }
         });
     }

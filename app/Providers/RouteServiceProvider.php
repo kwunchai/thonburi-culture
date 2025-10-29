@@ -27,6 +27,11 @@ class RouteServiceProvider extends ServiceProvider
         // กำหนด Rate Limiting สำหรับ API
         $this->configureRateLimiting();
 
+        // Route model binding for IntellectualProperty in admin routes
+        Route::bind('ip', function ($value) {
+            return \App\Models\IntellectualProperty::where('ip_id', $value)->firstOrFail();
+        });
+
         $this->routes(function () {
             // กำหนด Route สำหรับ API
             // ใช้ prefix 'api' และ middleware 'api'
