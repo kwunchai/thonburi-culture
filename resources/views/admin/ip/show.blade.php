@@ -1,33 +1,278 @@
-@extends('layouts.app')
-@section('title',$ip->title)
+@extends('layouts.admin')
+
+@section('title', 'รายละเอียดทรัพย์สินทางปัญญา')
+@section('header', 'รายละเอียดทรัพย์สินทางปัญญา')
 
 @section('content')
-<section class="mx-auto max-w-4xl px-4 lg:px-6 py-8 space-y-4">
-  <nav class="text-sm text-slate-500"><a href="{{ route('ip.index') }}" class="hover:underline">ทรัพย์สินทางปัญญา</a> › รายการ</nav>
-
-  <div class="rounded-2xl border bg-white p-6 space-y-3">
-    <div class="text-xs text-slate-500">เลขที่คำขอ: {{ $ip->application_no ?? '—' }}</div>
-    <h1 class="text-2xl font-semibold">{{ $ip->title }}</h1>
-    <div class="flex flex-wrap gap-2">
-      <span class="px-2 py-0.5 rounded bg-slate-100">{{ $ip->type }}</span>
-      @if($ip->status)<span class="px-2 py-0.5 rounded bg-emerald-100">{{ $ip->status }}</span>@endif
-      @if($ip->budget_year)<span class="px-2 py-0.5 rounded bg-sky-100">ปี {{ $ip->budget_year }}</span>@endif
+<!-- Breadcrumb -->
+<div class="row mb-3">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('admin.dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i> แดชบอร์ด
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ route('admin.ip.index') }}">ทรัพย์สินทางปัญญา</a>
+                </li>
+                <li class="breadcrumb-item active">รายละเอียด</li>
+            </ol>
+        </nav>
     </div>
+</div>
 
-    <dl class="grid sm:grid-cols-2 gap-3 text-sm">
-      <div><dt class="text-slate-500">ผู้ขอ</dt><dd>{{ $ip->applicant_name ?? '—' }}</dd></div>
-      <div><dt class="text-slate-500">คณะ</dt><dd>{{ $ip->faculty ?? '—' }}</dd></div>
-      <div class="sm:col-span-2"><dt class="text-slate-500">ชื่องานวิจัย</dt><dd>{{ $ip->research_title ?? '—' }}</dd></div>
-      <div><dt class="text-slate-500">แหล่งทุน</dt><dd>{{ $ip->funding_source ?? '—' }}</dd></div>
-      <div><dt class="text-slate-500">ผู้ยื่น</dt><dd>{{ $ip->submitter_name ?? '—' }}</dd></div>
-      <div><dt class="text-slate-500">เลขใบรับรอง</dt><dd>{{ $ip->certificate_no ?? '—' }}</dd></div>
-      <div><dt class="text-slate-500">ไฟล์ใบรับรอง</dt>
-        <dd>
+<!-- Action Buttons -->
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{{ route('admin.ip.edit', $ip->ip_id) }}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> แก้ไข
+        </a>
+        <a href="{{ route('admin.ip.index') }}" class="btn btn-secondary ml-2">
+            <i class="fas fa-arrow-left"></i> กลับไปรายการ
+        </a>
+        <form action="{{ route('admin.ip.destroy', $ip->ip_id) }}" method="POST" class="d-inline ml-2"
+              onsubmit="return confirm('ยืนยันการลบข้อมูลนี้?')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> ลบ
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Main Information Card -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-shield-alt"></i> ข้อมูลพื้นฐาน
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <h4 class="text-primary">{{ $ip->title }}</h4>
+                        <p class="text-muted mb-3">
+                            เลขที่ลงทะเบียน: 
+                            @if($ip->registration_number)
+                                <span class="badge badge-secondary">{{ $ip->registration_number }}</span>
+                            @else
+                                <span class="text-muted">ยังไม่มี</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>ประเภท:</strong>
+                        <span class="badge 
+                            @switch($ip->type)
+                                @case('copyright') badge-info @break
+                                @case('patent') badge-success @break
+                                @case('trademark') badge-warning @break
+                                @case('local_wisdom') badge-primary @break
+                                @case('trade_secret') badge-dark @break
+                                @default badge-secondary
+                            @endswitch
+                        ">
+                            {{ $ip->type_name }}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>สถานะ:</strong>
+                        <span class="badge 
+                            @switch($ip->status)
+                                @case('active') badge-success @break
+                                @case('registered') badge-primary @break
+                                @case('pending') badge-warning @break
+                                @case('expired') badge-danger @break
+                                @case('draft') badge-secondary @break
+                                @default badge-light
+                            @endswitch
+                        ">
+                            {{ $ip->status_name }}
+                        </span>
+                    </div>
+                </div>
+                
+                @if($ip->description)
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <strong>คำอธิบาย:</strong>
+                            <p class="mt-2">{{ $ip->description }}</p>
+                        </div>
+                    </div>
+                @endif
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <strong>วันที่ลงทะเบียน:</strong>
+                        <p>
+                            @if($ip->registration_date)
+                                {{ $ip->registration_date->format('d/m/Y') }}
+                            @else
+                                <span class="text-muted">ยังไม่มี</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>วันหมดอายุ:</strong>
+                        <p>
+                            @if($ip->expiry_date)
+                                {{ $ip->expiry_date->format('d/m/Y') }}
+                                @if($ip->is_expired)
+                                    <span class="badge badge-danger ml-2">หมดอายุแล้ว</span>
+                                @endif
+                            @else
+                                <span class="text-muted">ไม่มีกำหนด</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Information -->
+    <div class="col-lg-4">
+        <!-- File Information -->
         @if($ip->certificate_path)
-          <a class="text-indigo-600 hover:underline" href="{{ asset('storage/'.$ip->certificate_path) }}" target="_blank">เปิดไฟล์</a>
-        @else — @endif
-        </dd>
-      </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-file"></i> เอกสารประกอบ
+                </h3>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                <p class="mb-3">มีเอกสารแนบ</p>
+                <a href="{{ asset('storage/' . $ip->certificate_path) }}" target="_blank" 
+                   class="btn btn-primary btn-block">
+                    <i class="fas fa-download"></i> ดาวน์โหลด / ดูไฟล์
+                </a>
+            </div>
+        </div>
+        @endif
+        
+        <!-- Metadata -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i> ข้อมูลเพิ่มเติม
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>เจ้าของ:</strong>
+                    <p class="mb-1">{{ $ip->owner->name ?? 'ไม่ระบุ' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>ผู้สร้าง:</strong>
+                    <p class="mb-1">{{ $ip->creator->name ?? 'ไม่ระบุ' }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>วันที่สร้าง:</strong>
+                    <p class="mb-1">{{ $ip->created_at->format('d/m/Y H:i') }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>อัปเดตล่าสุด:</strong>
+                    <p class="mb-1">{{ $ip->updated_at->format('d/m/Y H:i') }}</p>
+                    @if($ip->updater)
+                        <small class="text-muted">โดย {{ $ip->updater->name }}</small>
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-cogs"></i> การจัดการ
+                </h3>
+            </div>
+            <div class="card-body">
+                @if($ip->status === 'draft')
+                    <button class="btn btn-success btn-block mb-2" onclick="changeStatus('registered')">
+                        <i class="fas fa-check"></i> ลงทะเบียน
+                    </button>
+                @endif
+                
+                @if($ip->status === 'active' && !$ip->is_expired)
+                    <button class="btn btn-warning btn-block mb-2" onclick="changeStatus('expired')">
+                        <i class="fas fa-clock"></i> ทำให้หมดอายุ
+                    </button>
+                @endif
+                
+                @if(in_array($ip->status, ['active', 'registered']))
+                    <button class="btn btn-danger btn-block mb-2" onclick="changeStatus('revoked')">
+                        <i class="fas fa-ban"></i> เพิกถอน
+                    </button>
+                @endif
+                
+                <a href="{{ route('admin.ip.edit', $ip->ip_id) }}" class="btn btn-primary btn-block">
+                    <i class="fas fa-edit"></i> แก้ไขข้อมูล
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show mt-3">
+        <i class="fas fa-check-circle"></i> {{ session('success') }}
+        <button type="button" class="close" data-dismiss="alert">
+            <span>&times;</span>
+        </button>
+    </div>
+@endif
+@endsection
+
+@section('scripts')
+<script>
+function changeStatus(newStatus) {
+    if (confirm('ยืนยันการเปลี่ยนสถานะ?')) {
+        // สร้าง form สำหรับส่งข้อมูล
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("admin.ip.update", $ip->ip_id) }}';
+        
+        // เพิ่ม CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        // เพิ่ม method PUT
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'PUT';
+        form.appendChild(methodField);
+        
+        // เพิ่ม status field
+        const statusField = document.createElement('input');
+        statusField.type = 'hidden';
+        statusField.name = 'status';
+        statusField.value = newStatus;
+        form.appendChild(statusField);
+        
+        // ส่งข้อมูล
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+@endsection
     </dl>
 
     @if($ip->remark)
