@@ -78,6 +78,68 @@
     </div>
 </div>
 
+<!-- Main Card -->
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h3 class="card-title">
+                    <i class="fas fa-list"></i> รายการข้อมูลวัฒนธรรม
+                </h3>
+            </div>
+            <div class="col-md-6 text-right">
+                <a href="{{ route('admin.cultural-items.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
+                </a>
+                <a href="{{ route('admin.cultural-items.export') }}" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Search and Filter -->
+        <form method="GET" action="{{ route('admin.cultural-items.index') }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="ค้นหาชื่อข้อมูลวัฒนธรรม..." 
+                               value="{{ request('search') }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-control" onchange="this.form.submit()">
+                        <option value="">เรียงตามหมวดหมู่</option>
+                        @foreach(\App\Models\CulturalCategory::orderBy('name')->get() as $category)
+                            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="order" class="form-control" onchange="this.form.submit()">
+                        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>ใหม่→เก่า</option>
+                        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>เก่า→ใหม่</option>
+                    </select>
+                </div>
+                @if(request('search') || request('category') || request('order') != 'desc')
+                <div class="col-md-3">
+                    <a href="{{ route('admin.cultural-items.index') }}" class="btn btn-default btn-block">
+                        <i class="fas fa-times"></i> ล้างการค้นหา
+                    </a>
+                </div>
+                @endif
+            </div>
+        </form>
+
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">รายการข้อมูลวัฒนธรรม</h3>

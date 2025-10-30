@@ -11,11 +11,26 @@ use Illuminate\Support\Facades\Storage;
 
 class CulturalItemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = CulturalItem::with(['category', 'community', 'creator'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = CulturalItem::with(['category', 'community', 'creator']);
+
+        // ค้นหาตามชื่อ
+        if ($request->has('search') && $request->search != '') {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // กรองตามหมวดหมู่
+        if ($request->has('category') && $request->category != '') {
+            $query->where('category_id', $request->category);
+        }
+
+        // เรียงลำดับ
+        $order = $request->get('order', 'desc');
+        $query->orderBy('created_at', $order);
+
+        $items = $query->paginate(10);
+        $items->appends($request->query());
         
         // สถิติสำหรับการ์ด
         $stats = [
@@ -28,6 +43,30 @@ class CulturalItemController extends Controller
         ];
         
         return view('admin.cultural-items.index', compact('items', 'stats'));
+    }
+
+    public function export()
+    {
+        $items = CulturalItem::with(['category', 'community', 'creator'])->get();
+
+        $csvContent = "\xEF\xBB\xBF"; // UTF-8 BOM
+        $csvContent .= "ลำดับ,ชื่อข้อมูลวัฒนธรรม,หมวดหมู่,ชุมชน,สถานะ,โดดเด่น,วันที่สร้าง,ผู้สร้าง\n";
+
+        foreach ($items as $index => $item) {
+            $csvContent .= ($index + 1) . ',';
+            $csvContent .= '"' . str_replace('"', '""', $item->title) . '",';
+            $csvContent .= '"' . str_replace('"', '""', $item->category->name ?? '') . '",';
+            $csvContent .= '"' . str_replace('"', '""', $item->community->name ?? '') . '",';
+            $csvContent .= ($item->is_published ? 'เผยแพร่' : 'ร่าง') . ',';
+            $csvContent .= ($item->is_featured ? 'ใช่' : 'ไม่') . ',';
+            $csvContent .= $item->created_at->format('d/m/Y H:i') . ',';
+            $csvContent .= '"' . str_replace('"', '""', $item->creator->name ?? '') . '"';
+            $csvContent .= "\n";
+        }
+
+        return response($csvContent)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="cultural-items-' . date('Y-m-d') . '.csv"');
     }
 
     public function create()

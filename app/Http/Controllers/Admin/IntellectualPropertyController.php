@@ -12,18 +12,36 @@ use Illuminate\Support\Facades\Storage;
 
 class IntellectualPropertyController extends Controller
 {
-    public function index(Request $req)
+    public function index(Request $request)
     {
-        $q = IntellectualProperty::query();
+        $query = IntellectualProperty::query();
 
-        if ($kw = $req->string('q')->toString()) {
-            $q->where(function($w) use ($kw){
-                $w->where('title','like',"%$kw%")
-                  ->orWhere('registration_number','like',"%$kw%")
-                  ->orWhere('description','like',"%$kw%");
+        // ค้นหาตามคำค้นหา
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                  ->orWhere('registration_number', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%');
             });
         }
-        $items = $q->latest('ip_id')->paginate(20)->withQueryString();
+
+        // กรองตามประเภท
+        if ($request->has('type') && $request->type != '') {
+            $query->where('type', $request->type);
+        }
+
+        // กรองตามสถานะ
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        // เรียงลำดับ
+        $order = $request->get('order', 'desc');
+        $query->orderBy('created_at', $order);
+
+        $items = $query->paginate(20);
+        $items->appends($request->query());
         
         // สถิติสำหรับการ์ด
         $stats = [
@@ -42,6 +60,29 @@ class IntellectualPropertyController extends Controller
         ];
         
         return view('admin.ip.index', compact('items', 'stats'));
+    }
+
+    public function export()
+    {
+        $items = IntellectualProperty::all();
+
+        $csvContent = "\xEF\xBB\xBF"; // UTF-8 BOM
+        $csvContent .= "ลำดับ,ชื่อเรื่อง,เลขทะเบียน,ประเภท,สถานะ,วันหมดอายุ,วันที่สร้าง\n";
+
+        foreach ($items as $index => $item) {
+            $csvContent .= ($index + 1) . ',';
+            $csvContent .= '"' . str_replace('"', '""', $item->title) . '",';
+            $csvContent .= '"' . str_replace('"', '""', $item->registration_number ?? '') . '",';
+            $csvContent .= '"' . str_replace('"', '""', $item->type?->label() ?? '') . '",';
+            $csvContent .= '"' . str_replace('"', '""', $item->status?->label() ?? '') . '",';
+            $csvContent .= ($item->expiry_date ? $item->expiry_date->format('d/m/Y') : '') . ',';
+            $csvContent .= $item->created_at->format('d/m/Y H:i');
+            $csvContent .= "\n";
+        }
+
+        return response($csvContent)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="intellectual-property-' . date('Y-m-d') . '.csv"');
     }
 
     public function create()

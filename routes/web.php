@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     
     // Cultural Items Management (using resource)
+    Route::get('cultural-items/export', [CulturalItemController::class, 'export'])->name('cultural-items.export');
     Route::resource('cultural-items', CulturalItemController::class);   
     
     // Slideshow Management (using resource)
@@ -67,6 +68,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('communities/{community}/update-location', [CommunityController::class, 'updateLocation'])->name('communities.update-location');
 
     // Intellectual Property Management (using resource)
+    Route::get('ip/export', [IntellectualPropertyController::class, 'export'])->name('ip.export');
     Route::resource('ip', IntellectualPropertyController::class);
     
     // Additional IP routes (if any)

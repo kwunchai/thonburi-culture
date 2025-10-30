@@ -137,44 +137,81 @@
     </div>
 </div>
 
-<!-- Action Bar -->
-<div class="row mb-3">
-    <div class="col-md-6">
-        <form method="GET" action="{{ route('admin.ip.index') }}" class="d-flex">
-            <div class="input-group">
-                <input type="text" name="q" value="{{ request('q') }}" class="form-control" 
-                       placeholder="ค้นหาชื่อ, เลขที่ลงทะเบียน, คำอธิบาย...">
-                <button class="btn btn-outline-secondary" type="submit">
-                    <i class="fas fa-search fa-sm"></i>
-                </button>
-                @if(request('q'))
-                    <a href="{{ route('admin.ip.index') }}" class="btn btn-outline-danger">
-                        <i class="fas fa-times fa-sm"></i>
-                    </a>
-                @endif
-            </div>
-        </form>
-    </div>
-    <div class="col-md-6 text-right">
-        <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-1"></i> เพิ่มทรัพย์สินทางปัญญา
-        </a>
-    </div>
-</div>
-
 <!-- Main Card -->
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">
-            <i class="fas fa-shield-alt mr-2"></i> 
-            รายการทรัพย์สินทางปัญญา
-            @if(request('q'))
-                <small class="text-muted">(ผลการค้นหา: "{{ request('q') }}")</small>
-            @endif
-        </h3>
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h3 class="card-title">
+                    <i class="fas fa-shield-alt"></i> รายการทรัพย์สินทางปัญญา
+                    @if(request('search'))
+                        <small class="text-muted">(ผลการค้นหา: "{{ request('search') }}")</small>
+                    @endif
+                </h3>
+            </div>
+            <div class="col-md-6 text-right">
+                <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
+                </a>
+                <a href="{{ route('admin.ip.export') }}" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export CSV
+                </a>
+            </div>
+        </div>
     </div>
-    
-    <div class="card-body p-0">
+
+    <div class="card-body">
+        <!-- Search and Filter -->
+        <form method="GET" action="{{ route('admin.ip.index') }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="ค้นหาชื่อ, เลขทะเบียน..." 
+                               value="{{ request('search') }}">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="type" class="form-control" onchange="this.form.submit()">
+                        <option value="">ทุกประเภท</option>
+                        @foreach(\App\Enums\IpType::cases() as $type)
+                            <option value="{{ $type->value }}" {{ request('type') == $type->value ? 'selected' : '' }}>
+                                {{ $type->label() }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-control" onchange="this.form.submit()">
+                        <option value="">ทุกสถานะ</option>
+                        @foreach(\App\Enums\IpStatus::cases() as $status)
+                            <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
+                                {{ $status->label() }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="order" class="form-control" onchange="this.form.submit()">
+                        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>ใหม่→เก่า</option>
+                        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>เก่า→ใหม่</option>
+                    </select>
+                </div>
+                @if(request('search') || request('type') || request('status') || request('order') != 'desc')
+                <div class="col-md-2">
+                    <a href="{{ route('admin.ip.index') }}" class="btn btn-default btn-block">
+                        <i class="fas fa-times"></i> ล้างการค้นหา
+                    </a>
+                </div>
+                @endif
+            </div>
+        </form>
+
         @if($items->count() > 0)
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
