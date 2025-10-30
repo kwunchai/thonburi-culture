@@ -211,7 +211,7 @@ $(document).ready(function() {
         var id = btn.data('id');
         
         $.ajax({
-            url: '/admin/slideshow/' + id + '/toggle-featured',
+            url: '{{ url("admin/slideshow") }}/' + id + '/toggle-featured',
             method: 'POST',
             data: {
                 _token: '{{ csrf_token() }}'
@@ -219,6 +219,8 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     location.reload();
+                } else {
+                    alert(response.message || 'เกิดข้อผิดพลาด');
                 }
             },
             error: function(xhr) {
