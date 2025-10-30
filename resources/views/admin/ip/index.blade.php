@@ -137,32 +137,9 @@
     </div>
 </div>
 
-<!-- Main Card -->
-<div class="card">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h3 class="card-title">
-                    <i class="fas fa-shield-alt"></i> รายการทรัพย์สินทางปัญญา
-                    @if(request('search'))
-                        <small class="text-muted">(ผลการค้นหา: "{{ request('search') }}")</small>
-                    @endif
-                </h3>
-            </div>
-            <div class="col-md-6 text-right">
-                <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
-                </a>
-                <a href="{{ route('admin.ip.export') }}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> Export CSV
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-body">
-        <!-- Search and Filter -->
-        <form method="GET" action="{{ route('admin.ip.index') }}" class="mb-4">
+<!-- Search and Filter Section -->
+<div class="mb-4">
+    <form method="GET" action="{{ route('admin.ip.index') }}">
             <div class="row">
                 <div class="col-md-4">
                     <div class="input-group">
@@ -211,9 +188,31 @@
                 @endif
             </div>
         </form>
+    </div>
 
-        @if($items->count() > 0)
-            <div class="table-responsive">
+    <!-- Header Section -->
+    <div class="row align-items-center mb-3">
+        <div class="col-md-6">
+            <h3 class="mb-0">
+                <i class="fas fa-shield-alt"></i> รายการทรัพย์สินทางปัญญา
+                @if(request('search'))
+                    <small class="text-muted">(ผลการค้นหา: "{{ request('search') }}")</small>
+                @endif
+            </h3>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
+            </a>
+            <a href="{{ route('admin.ip.export') }}" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    @if($items->count() > 0)
+        <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="bg-light">
                         <tr>
@@ -305,8 +304,8 @@
                     <i class="fas fa-shield-alt fa-2x text-muted"></i>
                 </div>
                 <h5 class="text-muted">ไม่พบข้อมูลทรัพย์สินทางปัญญา</h5>
-                @if(request('q'))
-                    <p class="text-muted mb-3">ไม่พบผลการค้นหาสำหรับ "{{ request('q') }}"</p>
+                @if(request('search'))
+                    <p class="text-muted mb-3">ไม่พบผลการค้นหาสำหรับ "{{ request('search') }}"</p>
                     <a href="{{ route('admin.ip.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i> กลับไปดูทั้งหมด
                     </a>
@@ -318,26 +317,23 @@
                 @endif
             </div>
         @endif
-    </div>
-    
-    @if($items->hasPages())
-        <div class="card-footer">
-            <div class="row align-items-center">
-                <div class="col-md-6">
+
+        <!-- Pagination -->
+        @if($items->hasPages())
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div>
                     <small class="text-muted">
                         แสดง {{ $items->firstItem() }}-{{ $items->lastItem() }} 
                         จากทั้งหมด {{ $items->total() }} รายการ
                     </small>
                 </div>
-                <div class="col-md-6">
+                <div>
                     {{ $items->links('pagination.custom') }}
                 </div>
             </div>
-        </div>
-    @endif
-</div>
+        @endif
 
-@if(session('success'))
+    @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show mt-3">
         <i class="fas fa-check-circle"></i> {{ session('success') }}
         <button type="button" class="close" data-dismiss="alert">

@@ -52,29 +52,9 @@
     </div>
 </div>
 
-<!-- Main Card -->
-<div class="card">
-    <div class="card-header">
-        <div class="row">
-            <div class="col-md-6">
-                <h3 class="card-title">
-                    <i class="fas fa-list"></i> รายการชุมชนในเขตธนบุรี
-                </h3>
-            </div>
-            <div class="col-md-6 text-right">
-                <a href="{{ route('admin.communities.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> เพิ่มชุมชนใหม่
-                </a>
-                <a href="{{ route('admin.communities.export') }}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> Export CSV
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-body">
-        <!-- Search and Filter -->
-        <form method="GET" action="{{ route('admin.communities.index') }}" class="mb-4">
+<!-- Search and Filter Section -->
+<div class="mb-4">
+    <form method="GET" action="{{ route('admin.communities.index') }}">
             <div class="row">
                 <div class="col-md-4">
                     <div class="input-group">
@@ -116,9 +96,27 @@
                 @endif
             </div>
         </form>
+    </div>
 
-        <!-- Table -->
-        <div class="table-responsive">
+    <!-- Header Section -->
+    <div class="row align-items-center mb-3">
+        <div class="col-md-6">
+            <h3 class="mb-0">
+                <i class="fas fa-list"></i> รายการชุมชนในเขตธนบุรี
+            </h3>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{{ route('admin.communities.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> เพิ่มชุมชนใหม่
+            </a>
+            <a href="{{ route('admin.communities.export') }}" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead class="thead-light">
                     <tr>
@@ -233,20 +231,19 @@
                 แสดง {{ $communities->firstItem() ?? 0 }} - {{ $communities->lastItem() ?? 0 }} 
                 จากทั้งหมด {{ $communities->total() }} รายการ
             </div>
-            {{ $communities->links() }}
-        </div>
-
-        <!-- Bulk Actions -->
-        <div class="mt-3" id="bulk-actions" style="display: none;">
-            <div class="alert alert-info">
-                <span id="selected-count">0</span> รายการที่เลือก
-                <button class="btn btn-danger btn-sm ml-3" id="bulk-delete">
-                    <i class="fas fa-trash"></i> ลบที่เลือก
-                </button>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Bulk Actions -->
+    <div class="mt-3" id="bulk-actions" style="display: none;">
+        <div class="alert alert-info">
+            <span id="selected-count">0</span> รายการที่เลือก
+            <button class="btn btn-danger btn-sm ml-3" id="bulk-delete">
+                <i class="fas fa-trash"></i> ลบที่เลือก
+            </button>
+        </div>
+    </div>
 
 @push('scripts')
 <script>
