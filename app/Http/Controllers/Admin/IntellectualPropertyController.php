@@ -24,7 +24,24 @@ class IntellectualPropertyController extends Controller
             });
         }
         $items = $q->latest('ip_id')->paginate(20)->withQueryString();
-        return view('admin.ip.index', compact('items'));
+        
+        // สถิติสำหรับการ์ด
+        $stats = [
+            'total_items' => IntellectualProperty::count(),
+            'active_items' => IntellectualProperty::where('status', 'active')->count(),
+            'registered_items' => IntellectualProperty::where('status', 'registered')->count(),
+            'pending_items' => IntellectualProperty::where('status', 'pending')->count(),
+            'draft_items' => IntellectualProperty::where('status', 'draft')->count(),
+            'expired_items' => IntellectualProperty::where('status', 'expired')->count(),
+            'copyright_items' => IntellectualProperty::where('type', 'copyright')->count(),
+            'patent_items' => IntellectualProperty::where('type', 'patent')->count(),
+            'trademark_items' => IntellectualProperty::where('type', 'trademark')->count(),
+            'local_wisdom_items' => IntellectualProperty::where('type', 'local_wisdom')->count(),
+            'with_registration' => IntellectualProperty::whereNotNull('registration_number')->count(),
+            'expiring_soon' => IntellectualProperty::whereBetween('expiry_date', [now(), now()->addDays(30)])->count(),
+        ];
+        
+        return view('admin.ip.index', compact('items', 'stats'));
     }
 
     public function create()

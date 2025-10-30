@@ -11,6 +11,16 @@
     
     <style>
         body { font-family: 'Sarabun', sans-serif; }
+        
+        /* Additional AdminLTE color classes for IP statistics */
+        .small-box.bg-purple { background-color: #6f42c1 !important; }
+        .small-box.bg-teal { background-color: #20c997 !important; }
+        .small-box.bg-orange { background-color: #fd7e14 !important; }
+        .small-box.bg-indigo { background-color: #6610f2 !important; }
+        .small-box.bg-purple .icon, .small-box.bg-teal .icon, 
+        .small-box.bg-orange .icon, .small-box.bg-indigo .icon { 
+            color: rgba(255,255,255,.15); 
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini">

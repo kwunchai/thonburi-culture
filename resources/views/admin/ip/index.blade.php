@@ -4,6 +4,139 @@
 @section('header', 'จัดการทรัพย์สินทางปัญญา')
 
 @section('content')
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ $stats['total_items'] }}</h3>
+                <p>ทรัพย์สินทางปัญญาทั้งหมด</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ $stats['active_items'] }}</h3>
+                <p>สถานะใช้งาน</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ $stats['registered_items'] }}</h3>
+                <p>ลงทะเบียนแล้ว</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-certificate"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ $stats['pending_items'] }}</h3>
+                <p>รอการอนุมัติ</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Type Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-purple">
+            <div class="inner">
+                <h3>{{ $stats['copyright_items'] }}</h3>
+                <p>ลิขสิทธิ์</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-copyright"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-teal">
+            <div class="inner">
+                <h3>{{ $stats['patent_items'] }}</h3>
+                <p>สิทธิบัตร</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-orange">
+            <div class="inner">
+                <h3>{{ $stats['trademark_items'] }}</h3>
+                <p>เครื่องหมายการค้า</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-trademark"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-indigo">
+            <div class="inner">
+                <h3>{{ $stats['local_wisdom_items'] }}</h3>
+                <p>ภูมิปัญญาท้องถิ่น</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-leaf"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-4 col-12">
+        <div class="small-box bg-secondary">
+            <div class="inner">
+                <h3>{{ $stats['with_registration'] }}</h3>
+                <p>มีเลขทะเบียน</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ $stats['expired_items'] }}</h3>
+                <p>หมดอายุแล้ว</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12">
+        <div class="small-box bg-dark">
+            <div class="inner">
+                <h3>{{ $stats['expiring_soon'] }}</h3>
+                <p>ใกล้หมดอายุ (30 วัน)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-bell"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Action Bar -->
 <div class="row mb-3">
     <div class="col-md-6">
