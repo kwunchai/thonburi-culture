@@ -15,14 +15,42 @@ class FrontendController extends Controller
      */
     public function home()
     {
-        // ดึงรายการที่ตั้งเป็น featured สำหรับ Hero Slideshow
-        $featuredItems = CulturalItem::with(['category', 'community', 'creator'])
-            ->where('is_featured', true)
-            ->where('is_published', true)
+        // เคลียร์ cache ทั้งหมดก่อน
+        \Cache::flush();
+        
+        // Log debug information
+        \Log::info('FrontendController@home called at: ' . now());
+        
+        // ตรวจสอบข้อมูลที่มี is_featured = 1 ในฐานข้อมูล
+        $rawFeaturedCount = DB::table('cultural_items')->where('is_featured', 1)->count();
+        \Log::info('Raw featured count from DB: ' . $rawFeaturedCount);
+        
+        // Force fresh data without cache - ใช้ fresh query
+        $featuredItems = CulturalItem::query()
+            ->with(['category', 'community', 'creator'])
+            ->whereRaw('is_featured = 1')  // ใช้ whereRaw เพื่อบังคับ fresh query
+            ->where('is_published', 1)
             ->where('publish_date', '<=', now())
             ->orderBy('featured_order', 'asc')
             ->orderBy('publish_date', 'desc')
-            ->get();
+            ->get()
+            ->fresh();  // Force reload from database
+        
+        \Log::info('Final featured items count: ' . $featuredItems->count());
+        
+        // Double check - filter อีกครั้งเพื่อให้แน่ใจ
+        $featuredItems = $featuredItems->filter(function($item) {
+            // Reload item to get latest data
+            $fresh = CulturalItem::find($item->id);
+            return $fresh && $fresh->is_featured == 1;
+        });
+        
+        \Log::info('After filtering featured items count: ' . $featuredItems->count());
+        
+        // Debug each item
+        foreach($featuredItems as $item) {
+            \Log::info("Item ID: {$item->id}, is_featured: {$item->is_featured}, title: {$item->title}");
+        }
         
         // ถ้าไม่มี featured items หรือมีน้อยกว่า 4 ให้ดึงรายการล่าสุดมาเติม
         if ($featuredItems->count() < 4) {
