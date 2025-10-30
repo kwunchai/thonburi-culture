@@ -210,22 +210,37 @@ $(document).ready(function() {
         var btn = $(this);
         var id = btn.data('id');
         
+        console.log('Clicking toggle for ID:', id);
+        
         $.ajax({
             url: '{{ url("admin/slideshow") }}/' + id + '/toggle-featured',
             method: 'POST',
             data: {
                 _token: '{{ csrf_token() }}'
             },
+            beforeSend: function() {
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> กำลังประมวลผล...');
+            },
             success: function(response) {
+                console.log('Response:', response);
                 if (response.success) {
+                    if (response.message) {
+                        alert(response.message);
+                    }
                     location.reload();
                 } else {
                     alert(response.message || 'เกิดข้อผิดพลาด');
+                    btn.prop('disabled', false);
                 }
             },
             error: function(xhr) {
+                console.log('Error:', xhr);
                 var response = xhr.responseJSON;
-                alert(response.message || 'เกิดข้อผิดพลาด');
+                alert(response?.message || 'เกิดข้อผิดพลาด');
+                btn.prop('disabled', false);
+            },
+            complete: function() {
+                btn.prop('disabled', false);
             }
         });
     });

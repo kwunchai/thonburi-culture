@@ -203,7 +203,11 @@ class SlideshowController extends Controller
         $item->is_featured = !$item->is_featured;
         
         if ($item->is_featured) {
-            $item->featured_order = CulturalItem::where('is_featured', true)->max('featured_order') + 1;
+            // คำนวณ order ใหม่โดยหา max จาก items อื่นที่ featured อยู่แล้ว
+            $maxOrder = CulturalItem::where('is_featured', true)
+                ->where('id', '!=', $item->id)
+                ->max('featured_order') ?? 0;
+            $item->featured_order = $maxOrder + 1;
         } else {
             $item->featured_order = null;
         }
@@ -212,7 +216,8 @@ class SlideshowController extends Controller
         
         return response()->json([
             'success' => true,
-            'is_featured' => $item->is_featured
+            'is_featured' => $item->is_featured,
+            'message' => $item->is_featured ? 'เพิ่มเป็น Slideshow เรียบร้อยแล้ว' : 'ลบออกจาก Slideshow เรียบร้อยแล้ว'
         ]);
     }
 
