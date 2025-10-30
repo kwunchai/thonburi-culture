@@ -78,14 +78,6 @@
                     </li>
                     
                     <li class="nav-item">
-                        <a href="{{ route('admin.cultural-items.index') }}" class="nav-link {{ request()->routeIs('admin.cultural-items.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-landmark"></i>
-                            <p>ข้อมูลวัฒนธรรม</p>
-                        </a>
-                    </li>
-
-                    
-                    <li class="nav-item">
                         <a href="{{ route('admin.communities.index') }}" 
                         class="nav-link {{ request()->routeIs('admin.communities.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marked-alt"></i>
@@ -96,6 +88,13 @@
                                 @endphp
                                 <span class="badge badge-info right">{{ $communityCount }}</span>
                             </p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="{{ route('admin.cultural-items.index') }}" class="nav-link {{ request()->routeIs('admin.cultural-items.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-landmark"></i>
+                            <p>ข้อมูลวัฒนธรรม</p>
                         </a>
                     </li>
 
