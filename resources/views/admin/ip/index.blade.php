@@ -12,11 +12,11 @@
                 <input type="text" name="q" value="{{ request('q') }}" class="form-control" 
                        placeholder="ค้นหาชื่อ, เลขที่ลงทะเบียน, คำอธิบาย...">
                 <button class="btn btn-outline-secondary" type="submit">
-                    <i class="fas fa-search"></i>
+                    <i class="fas fa-search fa-sm"></i>
                 </button>
                 @if(request('q'))
                     <a href="{{ route('admin.ip.index') }}" class="btn btn-outline-danger">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-times fa-sm"></i>
                     </a>
                 @endif
             </div>
@@ -24,7 +24,7 @@
     </div>
     <div class="col-md-6 text-right">
         <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> เพิ่มทรัพย์สินทางปัญญา
+            <i class="fas fa-plus mr-1"></i> เพิ่มทรัพย์สินทางปัญญา
         </a>
     </div>
 </div>
@@ -33,7 +33,7 @@
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">
-            <i class="fas fa-shield-alt"></i> 
+            <i class="fas fa-shield-alt mr-2"></i> 
             รายการทรัพย์สินทางปัญญา
             @if(request('q'))
                 <small class="text-muted">(ผลการค้นหา: "{{ request('q') }}")</small>
@@ -110,16 +110,16 @@
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ route('admin.ip.edit', $item->ip_id) }}" 
-                                           class="btn btn-warning" title="แก้ไข">
-                                            <i class="fas fa-edit"></i>
+                                           class="btn btn-warning btn-xs" title="แก้ไข">
+                                            <i class="fas fa-edit fa-sm"></i>
                                         </a>
                                         <form action="{{ route('admin.ip.destroy', $item->ip_id) }}" 
                                               method="POST" class="d-inline"
                                               onsubmit="return confirm('ยืนยันการลบข้อมูลนี้?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger" title="ลบ">
-                                                <i class="fas fa-trash"></i>
+                                            <button type="submit" class="btn btn-danger btn-xs" title="ลบ">
+                                                <i class="fas fa-trash fa-sm"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -132,18 +132,18 @@
         @else
             <div class="text-center py-5">
                 <div class="mb-3">
-                    <i class="fas fa-shield-alt fa-3x text-muted"></i>
+                    <i class="fas fa-shield-alt fa-2x text-muted"></i>
                 </div>
                 <h5 class="text-muted">ไม่พบข้อมูลทรัพย์สินทางปัญญา</h5>
                 @if(request('q'))
                     <p class="text-muted mb-3">ไม่พบผลการค้นหาสำหรับ "{{ request('q') }}"</p>
                     <a href="{{ route('admin.ip.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> กลับไปดูทั้งหมด
+                        <i class="fas fa-arrow-left mr-1"></i> กลับไปดูทั้งหมด
                     </a>
                 @else
                     <p class="text-muted mb-3">เริ่มต้นด้วยการเพิ่มทรัพย์สินทางปัญญาแรกของคุณ</p>
                     <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> เพิ่มทรัพย์สินทางปัญญา
+                        <i class="fas fa-plus mr-1"></i> เพิ่มทรัพย์สินทางปัญญา
                     </a>
                 @endif
             </div>
