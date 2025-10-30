@@ -78,29 +78,9 @@
     </div>
 </div>
 
-<!-- Main Card -->
-<div class="card">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h3 class="card-title">
-                    <i class="fas fa-list"></i> รายการข้อมูลวัฒนธรรม
-                </h3>
-            </div>
-            <div class="col-md-6 text-right">
-                <a href="{{ route('admin.cultural-items.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
-                </a>
-                <a href="{{ route('admin.cultural-items.export') }}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> Export CSV
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-body">
-        <!-- Search and Filter -->
-        <form method="GET" action="{{ route('admin.cultural-items.index') }}" class="mb-4">
+<!-- Search and Filter Section -->
+<div class="mb-4">
+    <form method="GET" action="{{ route('admin.cultural-items.index') }}">
             <div class="row">
                 <div class="col-md-4">
                     <div class="input-group">
@@ -139,66 +119,78 @@
                 @endif
             </div>
         </form>
-
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">รายการข้อมูลวัฒนธรรม</h3>
-        <div class="card-tools">
-            <a href="{{ route('admin.cultural-items.create') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
-            </a>
-        </div>
     </div>
-    <div class="card-body table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th style="width: 50px">ID</th>
-                    <th>ชื่อ</th>
-                    <th>หมวดหมู่</th>
-                    <th>ชุมชน</th>
-                    <th>สถานะ</th>
-                    <th style="width: 150px">จัดการ</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($items as $item)
-                <tr>
-                    <td>{{ $item->id }}</td>
-                    <td>{{ $item->title }}</td>
-                    <td>{{ $item->category->name }}</td>
-                    <td>{{ $item->community->name }}</td>
-                    <td>
-                        @if($item->is_published)
-                            <span class="badge badge-success">เผยแพร่</span>
-                        @else
-                            <span class="badge badge-warning">ฉบับร่าง</span>
-                        @endif
-                    </td>
-                    <td>
-                        <a href="{{ route('admin.cultural-items.edit', $item) }}" class="btn btn-sm btn-info">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <form action="{{ route('admin.cultural-items.destroy', $item) }}" method="POST" class="d-inline"
-                              onsubmit="return confirm('คุณแน่ใจหรือไม่?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="text-center">ไม่มีข้อมูล</td>
-                </tr>
-                @endforelse
-            </tbody>
+
+    <!-- Header Section -->
+    <div class="row align-items-center mb-3">
+            <div class="col-md-6">
+                <h3 class="mb-0">
+                    <i class="fas fa-list"></i> รายการข้อมูลวัฒนธรรม
+                </h3>
+            </div>
+            <div class="col-md-6 text-right">
+                <a href="{{ route('admin.cultural-items.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
+                </a>
+                <a href="{{ route('admin.cultural-items.export') }}" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export CSV
+                </a>
+            </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px">ID</th>
+                        <th>ชื่อ</th>
+                        <th>หมวดหมู่</th>
+                        <th>ชุมชน</th>
+                        <th>สถานะ</th>
+                        <th style="width: 150px" class="text-center">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($items as $item)
+                    <tr>
+                        <td>{{ $item->id }}</td>
+                        <td><strong>{{ $item->title }}</strong></td>
+                        <td>{{ $item->category->name }}</td>
+                        <td>{{ $item->community->name }}</td>
+                        <td>
+                            @if($item->is_published)
+                                <span class="badge badge-success">เผยแพร่</span>
+                            @else
+                                <span class="badge badge-warning">ฉบับร่าง</span>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ route('admin.cultural-items.edit', $item) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ route('admin.cultural-items.destroy', $item) }}" method="POST" class="d-inline"
+                                  onsubmit="return confirm('คุณแน่ใจหรือไม่?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center">ไม่มีข้อมูล</td>
+                    </tr>
+                    @endforelse
+                </tbody>
         </table>
     </div>
-    <div class="card-footer">
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center">
         {{ $items->links() }}
     </div>
-</div>
+
 @endsection
