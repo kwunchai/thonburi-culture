@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 use App\Policies\IntellectualPropertyPolicy;
 
+use App\Enums\IpType;
+use App\Enums\IpStatus;
+
 class IntellectualProperty extends Model
 {
     use HasFactory, SoftDeletes;
@@ -49,6 +52,8 @@ class IntellectualProperty extends Model
      * The attributes that should be cast.
      */
     protected $casts = [
+        'type' => IpType::class,
+        'status' => IpStatus::class,
         'registration_date' => 'date',
         'expiry_date' => 'date',
         'metadata' => 'array',
