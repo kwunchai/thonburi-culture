@@ -4,6 +4,80 @@
 @section('header', 'จัดการข้อมูลวัฒนธรรม')
 
 @section('content')
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ $stats['total_items'] }}</h3>
+                <p>ข้อมูลวัฒนธรรมทั้งหมด</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-landmark"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ $stats['published_items'] }}</h3>
+                <p>เผยแพร่แล้ว</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ $stats['featured_items'] }}</h3>
+                <p>ข้อมูลเด่น</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-star"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ $stats['draft_items'] }}</h3>
+                <p>ฉบับร่าง</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-edit"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-6 col-12">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ $stats['communities_with_items'] }}</h3>
+                <p>ชุมชนที่มีข้อมูลวัฒนธรรม</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-12">
+        <div class="small-box bg-secondary">
+            <div class="inner">
+                <h3>{{ $stats['categories_used'] }}</h3>
+                <p>หมวดหมู่ที่ใช้งาน</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-tags"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">รายการข้อมูลวัฒนธรรม</h3>

@@ -17,7 +17,17 @@ class CulturalItemController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         
-        return view('admin.cultural-items.index', compact('items'));
+        // สถิติสำหรับการ์ด
+        $stats = [
+            'total_items' => CulturalItem::count(),
+            'published_items' => CulturalItem::where('is_published', true)->count(),
+            'featured_items' => CulturalItem::where('is_featured', true)->count(),
+            'draft_items' => CulturalItem::where('is_published', false)->count(),
+            'communities_with_items' => CulturalItem::distinct('community_id')->count(),
+            'categories_used' => CulturalItem::distinct('category_id')->count(),
+        ];
+        
+        return view('admin.cultural-items.index', compact('items', 'stats'));
     }
 
     public function create()
