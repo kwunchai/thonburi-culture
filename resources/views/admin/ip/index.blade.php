@@ -160,7 +160,7 @@
                     </small>
                 </div>
                 <div class="col-md-6">
-                    {{ $items->links() }}
+                    {{ $items->links('pagination.custom') }}
                 </div>
             </div>
         </div>
