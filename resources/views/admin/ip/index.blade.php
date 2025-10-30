@@ -245,28 +245,31 @@
                                     <span class="badge 
                                         @switch($item->type)
                                             @case('copyright') badge-info @break
-                                            @case('patent') badge-success @break
+                                            @case('invention_patent') badge-success @break
                                             @case('trademark') badge-warning @break
-                                            @case('local_wisdom') badge-primary @break
-                                            @case('trade_secret') badge-dark @break
+                                            @case('tk') badge-primary @break
+                                            @case('petty_patent') badge-success @break
+                                            @case('design_patent') badge-success @break
+                                            @case('gi') badge-info @break
                                             @default badge-secondary
                                         @endswitch
                                     ">
-                                        {{ $item->type_name }}
+                                        {{ $item->type_label }}
                                     </span>
                                 </td>
                                 <td>
                                     <span class="badge 
                                         @switch($item->status)
-                                            @case('active') badge-success @break
-                                            @case('registered') badge-primary @break
-                                            @case('pending') badge-warning @break
+                                            @case('registered') badge-success @break
+                                            @case('submitted') badge-warning @break
+                                            @case('under_review') badge-info @break
                                             @case('expired') badge-danger @break
                                             @case('draft') badge-secondary @break
+                                            @case('rejected') badge-danger @break
                                             @default badge-light
                                         @endswitch
                                     ">
-                                        {{ $item->status_name }}
+                                        {{ $item->status_label }}
                                     </span>
                                 </td>
                                 <td>

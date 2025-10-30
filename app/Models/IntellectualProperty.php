@@ -52,8 +52,6 @@ class IntellectualProperty extends Model
      * The attributes that should be cast.
      */
     protected $casts = [
-        'type' => IpType::class,
-        'status' => IpStatus::class,
         'registration_date' => 'date',
         'expiry_date' => 'date',
         'metadata' => 'array',
@@ -62,6 +60,40 @@ class IntellectualProperty extends Model
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
+
+    /**
+     * Get the type enum instance
+     */
+    public function getTypeEnum(): ?IpType
+    {
+        return IpType::tryFrom($this->type);
+    }
+
+    /**
+     * Get the status enum instance
+     */
+    public function getStatusEnum(): ?IpStatus
+    {
+        return IpStatus::tryFrom($this->status);
+    }
+
+    /**
+     * Get the type label
+     */
+    public function getTypeLabelAttribute(): string
+    {
+        $enum = $this->getTypeEnum();
+        return $enum ? $enum->label() : $this->type;
+    }
+
+    /**
+     * Get the status label
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        $enum = $this->getStatusEnum();
+        return $enum ? $enum->label() : $this->status;
+    }
 
     /**
      * The attributes that should be hidden for serialization.
