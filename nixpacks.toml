@@ -1,0 +1,8 @@
+[phases.build]
+nixpkgs = ["php83", "composer"]
+
+[phases.setup]
+nixpacks = ["php83"]
+
+[phases.install]
+cmds = ["composer install --no-dev"]
