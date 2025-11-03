@@ -1,0 +1,21 @@
+# Use official PHP 8.3 image
+FROM php:8.3-cli
+
+# Install important system dependencies and PHP extensions
+RUN apt-get update && \
+    apt-get install -y libzip-dev unzip git && \
+    docker-php-ext-install zip
+
+# Install Composer globally
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+COPY . .
+
+# Install PHP dependencies (this will use PHP 8.3)
+RUN composer install --no-dev
+
+EXPOSE 8080
+
+# Start your application (adjust command to match your app)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
