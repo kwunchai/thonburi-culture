@@ -1,0 +1,7 @@
+; Add these lines to your php.ini file (C:\laragon\bin\php\php-8.3.16-Win32-vs16-x64\php.ini)
+; At the end of the file, add:
+
+[xdebug]
+zend_extension=php_xdebug.dll
+xdebug.mode=coverage
+xdebug.start_with_request=yes

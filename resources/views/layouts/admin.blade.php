@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') | วัฒนธรรมเขตธนบุรี</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -11,6 +12,16 @@
     
     <style>
         body { font-family: 'Sarabun', sans-serif; }
+        
+        /* Additional AdminLTE color classes for IP statistics */
+        .small-box.bg-purple { background-color: #6f42c1 !important; }
+        .small-box.bg-teal { background-color: #20c997 !important; }
+        .small-box.bg-orange { background-color: #fd7e14 !important; }
+        .small-box.bg-indigo { background-color: #6610f2 !important; }
+        .small-box.bg-purple .icon, .small-box.bg-teal .icon, 
+        .small-box.bg-orange .icon, .small-box.bg-indigo .icon { 
+            color: rgba(255,255,255,.15); 
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini">
@@ -78,14 +89,6 @@
                     </li>
                     
                     <li class="nav-item">
-                        <a href="{{ route('admin.cultural-items.index') }}" class="nav-link {{ request()->routeIs('admin.cultural-items.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-landmark"></i>
-                            <p>ข้อมูลวัฒนธรรม</p>
-                        </a>
-                    </li>
-
-                    
-                    <li class="nav-item">
                         <a href="{{ route('admin.communities.index') }}" 
                         class="nav-link {{ request()->routeIs('admin.communities.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-marked-alt"></i>
@@ -98,6 +101,13 @@
                             </p>
                         </a>
                     </li>
+                    
+                    <li class="nav-item">
+                        <a href="{{ route('admin.cultural-items.index') }}" class="nav-link {{ request()->routeIs('admin.cultural-items.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-landmark"></i>
+                            <p>ข้อมูลวัฒนธรรม</p>
+                        </a>
+                    </li>
 
                     {{-- ข้อมูลงานวิจัย --}}
                     <li class="nav-item">
@@ -108,11 +118,11 @@
                         </a>
                     </li>
 
-                    {{-- ข้อมูลทรัพย์สินทางปัญญา --}}
+                    {{-- ทรัพย์สินทางปัญญา --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.ip.index') }}" 
                             class="nav-link {{ request()->routeIs('admin.ip.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-certificate"></i><p>ข้อมูลทรัพย์สินทางปัญญา</p>
+                            <i class="nav-icon fas fa-certificate"></i><p>ทรัพย์สินทางปัญญา</p>
                         </a>
                     </li>
 
@@ -169,5 +179,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+@stack('scripts')
 </body>
 </html>

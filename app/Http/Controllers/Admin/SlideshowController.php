@@ -10,6 +10,8 @@ use App\Models\Community;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class SlideshowController extends Controller
 {
@@ -20,12 +22,14 @@ class SlideshowController extends Controller
     {
         // ดึงเฉพาะรายการที่ featured
         $featuredItems = CulturalItem::with(['category', 'community', 'creator'])
-            ->featured()
+            ->where('is_featured', 1)
+            ->orderBy('featured_order', 'asc')
+            ->orderBy('publish_date', 'desc')
             ->get();
         
         // ดึงรายการทั้งหมดที่สามารถเพิ่มเป็น featured
         $availableItems = CulturalItem::with(['category', 'community'])
-            ->where('is_featured', false)
+            ->where('is_featured', 0)
             ->published()
             ->orderBy('publish_date', 'desc')
             ->get();
@@ -187,33 +191,142 @@ class SlideshowController extends Controller
      */
     public function toggleFeatured(Request $request, $id)
     {
-        $item = CulturalItem::findOrFail($id);
+        Log::info('Toggle featured called for ID: ' . $id);
         
-        // ตรวจสอบจำนวน
-        if (!$item->is_featured) {
-            $featuredCount = CulturalItem::where('is_featured', true)->count();
-            if ($featuredCount >= 4) {
+        // รับ action จาก request body
+        $requestData = json_decode($request->getContent(), true);
+        $action = $requestData['action'] ?? 'toggle';
+        
+        Log::info('Request action: ' . $action);
+        
+        try {
+            DB::beginTransaction();
+            
+            $item = CulturalItem::findOrFail($id);
+            
+            Log::info('Current item featured status: ' . ($item->is_featured ? 'true' : 'false'));
+            
+            // เก็บค่าก่อนการเปลี่ยนแปลง
+            $oldFeatured = $item->is_featured;
+            
+            // กำหนด featured status ตาม action
+            if ($action === 'add') {
+                $newFeatured = true;
+            } elseif ($action === 'remove') {
+                $newFeatured = false;
+            } else {
+                // toggle mode (เดิม)
+                $newFeatured = !$item->is_featured;
+            }
+            
+            Log::info('Action: ' . $action . ', Old featured: ' . ($oldFeatured ? 'true' : 'false') . ', New featured: ' . ($newFeatured ? 'true' : 'false'));
+            
+            // ตรวจสอบจำนวนเมื่อต้องการเพิ่ม
+            if ($newFeatured && !$oldFeatured) {
+                $featuredCount = CulturalItem::where('is_featured', true)->count();
+                Log::info('Current featured count: ' . $featuredCount);
+                if ($featuredCount >= 4) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'จำนวน Slideshow เต็มแล้ว (สูงสุด 4 รายการ)'
+                    ], 400);
+                }
+            }
+            
+            // กำหนดค่าให้ model
+            $item->is_featured = $newFeatured;
+            
+            Log::info('New featured status: ' . ($item->is_featured ? 'true' : 'false'));
+            
+            if ($item->is_featured) {
+                // คำนวณ order ใหม่โดยหา max จาก items อื่นที่ featured อยู่แล้ว
+                $maxOrder = CulturalItem::where('is_featured', true)
+                    ->where('id', '!=', $item->id)
+                    ->max('featured_order') ?? 0;
+                $item->featured_order = $maxOrder + 1;
+                Log::info('New featured order: ' . $item->featured_order);
+            } else {
+                $item->featured_order = null;
+                Log::info('Removed featured order');
+            }
+            
+            // บันทึกข้อมูลด้วย raw SQL เพื่อให้แน่ใจ
+            $newFeaturedValue = $item->is_featured ? 1 : 0;
+            $newOrderValue = $item->featured_order;
+            
+            $updated = DB::table('cultural_items')
+                ->where('id', $id)
+                ->update([
+                    'is_featured' => $newFeaturedValue,
+                    'featured_order' => $newOrderValue,
+                    'updated_at' => now()
+                ]);
+                
+            Log::info('Raw SQL update result: ' . $updated);
+            
+            if (!$updated) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'จำนวน Slideshow เต็มแล้ว (สูงสุด 4 รายการ)'
-                ], 400);
+                    'message' => 'ไม่สามารถบันทึกข้อมูลได้ (SQL update failed)'
+                ], 500);
             }
+            
+            // Commit transaction
+            DB::commit();
+            
+            // ตรวจสอบข้อมูลหลังการบันทึก
+            $item->refresh();
+            Log::info('After refresh - featured status: ' . ($item->is_featured ? 'true' : 'false'));
+            
+            // ตรวจสอบในฐานข้อมูลอีกครั้ง
+            $dbItem = CulturalItem::find($id);
+            Log::info('Database check - featured status: ' . ($dbItem->is_featured ? 'true' : 'false'));
+            
+            $message = $item->is_featured ? 'เพิ่มเป็น Slideshow เรียบร้อยแล้ว' : 'ลบออกจาก Slideshow เรียบร้อยแล้ว';
+            
+            // เตรียมข้อมูลรายการสำหรับส่งกลับ
+            $itemData = null;
+            if (!$item->is_featured) {
+                // หากยกเลิก featured ให้ส่งข้อมูลรายการกลับไปเพื่อแสดงในตาราง
+                $itemData = [
+                    'id' => $item->id,
+                    'title' => $item->title,
+                    'category_name' => $item->category->name ?? '',
+                    'community_name' => $item->community->name ?? '',
+                    'publish_date' => $item->publish_date->format('d/m/Y'),
+                    'image' => $item->image ? true : false,
+                    'image_url' => $item->image ? Storage::url($item->image) : null
+                ];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'is_featured' => $item->is_featured,
+                'old_featured' => $oldFeatured,
+                'updated' => $updated,
+                'message' => $message,
+                'item_data' => $itemData,
+                'debug' => [
+                    'id' => $id,
+                    'old_status' => $oldFeatured,
+                    'new_status' => $item->is_featured,
+                    'db_status' => $dbItem->is_featured,
+                    'updated' => $updated,
+                    'transaction' => 'committed'
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Toggle featured error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'เกิดข้อผิดพลาด: ' . $e->getMessage()
+            ], 500);
         }
-        
-        $item->is_featured = !$item->is_featured;
-        
-        if ($item->is_featured) {
-            $item->featured_order = CulturalItem::where('is_featured', true)->max('featured_order') + 1;
-        } else {
-            $item->featured_order = null;
-        }
-        
-        $item->save();
-        
-        return response()->json([
-            'success' => true,
-            'is_featured' => $item->is_featured
-        ]);
     }
 
     /**

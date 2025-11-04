@@ -2,12 +2,45 @@
 
 @section('title', 'หน้าแรก')
 
+@push('meta')
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="cache-bust" content="{{ time() }}">
+@endpush
+
 @section('content')
+<!-- Debug Info (แสดงเฉพาะใน development) -->
+@if(config('app.debug'))
+@php
+    // Filter เฉพาะ items ที่ is_featured = 1 จริงๆ สำหรับ debug
+    $debugActualFeatured = $featuredItems->filter(function($item) {
+        return $item->is_featured == 1;
+    });
+@endphp
+<div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-family: monospace; font-size: 12px;">
+    <div>Total Featured Items: {{ $featuredItems->count() }}</div>
+    <div>Actual Featured Items: {{ $debugActualFeatured->count() }}</div>
+    <div>Timestamp: {{ now()->format('Y-m-d H:i:s') }}</div>
+    <div>Cache Bust: {{ time() }}</div>
+    @foreach($featuredItems as $i => $item)
+    <div>{{ $i+1 }}. ID: {{ $item->id ?? 'N/A' }} - Featured: {{ isset($item->is_featured) ? ($item->is_featured ? 'Yes' : 'No') : 'N/A' }}</div>
+    @endforeach
+</div>
+@endif
+
 <!-- Hero Slideshow Section -->
 <section class="relative h-[600px] md:h-[700px] overflow-hidden bg-gray-900">
     <!-- Slideshow Container -->
     <div class="relative h-full" id="heroSlideshow">
-        @forelse($featuredItems as $index => $item)
+        @php
+            // Filter เฉพาะ items ที่ is_featured = 1 จริงๆ
+            $actualFeaturedItems = $featuredItems->filter(function($item) {
+                return $item->is_featured == 1;
+            });
+        @endphp
+        
+        @forelse($actualFeaturedItems as $index => $item)
         <!-- Slide {{ $index + 1 }} -->
         <div class="hero-slide absolute inset-0 transition-opacity duration-1000 {{ $index === 0 ? 'opacity-100' : 'opacity-0' }}" data-slide="{{ $index }}">
             <!-- Background Image -->
@@ -101,9 +134,9 @@
     </div>
     
     <!-- Slide Indicators -->
-    @if($featuredItems->count() > 1)
+    @if($actualFeaturedItems->count() > 1)
     <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
-        @foreach($featuredItems as $index => $item)
+        @foreach($actualFeaturedItems as $index => $item)
         <button class="slide-indicator w-12 h-1.5 rounded-full bg-white/40 hover:bg-white/60 transition-all duration-300 {{ $index === 0 ? 'bg-white w-16' : '' }}"
                 data-slide-to="{{ $index }}"
                 aria-label="Go to slide {{ $index + 1 }}">
@@ -126,9 +159,13 @@
     
     <!-- Slide Counter -->
     @if($featuredItems->count() > 1)
+        @endif
+    
+    <!-- Slide Counter -->
+    @if($actualFeaturedItems->count() > 1)
     <div class="absolute top-8 right-8 z-20 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full">
-        <span class="text-white font-semibold">
-            <span id="currentSlide">1</span> / {{ $featuredItems->count() }}
+        <span class="text-white text-sm font-medium">
+            <span id="current-slide">1</span> / <span id="total-slides">{{ $actualFeaturedItems->count() }}</span>
         </span>
     </div>
     @endif
