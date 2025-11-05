@@ -281,11 +281,15 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('admin.ip.edit', $item->ip_id) }}" 
+                                        <a href="{{ route('admin.ip.show', $item) }}" 
+                                           class="btn btn-info btn-xs" title="ดูรายละเอียด">
+                                            <i class="fas fa-eye fa-sm"></i>
+                                        </a>
+                                        <a href="{{ route('admin.ip.edit', $item) }}" 
                                            class="btn btn-warning btn-xs" title="แก้ไข">
                                             <i class="fas fa-edit fa-sm"></i>
                                         </a>
-                                        <form action="{{ route('admin.ip.destroy', $item->ip_id) }}" 
+                                        <form action="{{ route('admin.ip.destroy', $item) }}" 
                                               method="POST" class="d-inline"
                                               onsubmit="return confirm('ยืนยันการลบข้อมูลนี้?')">
                                             @csrf

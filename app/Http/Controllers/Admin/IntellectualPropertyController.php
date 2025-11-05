@@ -121,6 +121,14 @@ class IntellectualPropertyController extends Controller
         return redirect()->route('admin.ip.index')->with('success','อัปเดตเรียบร้อย');
     }
 
+    public function show(IntellectualProperty $ip)
+    {
+        // Load relationships to prevent N+1 queries
+        $ip->load(['owner', 'creator', 'updater']);
+        
+        return view('admin.ip.show', compact('ip'));
+    }
+
     public function destroy(IntellectualProperty $ip)
     {
         if ($ip->certificate_path) Storage::disk('public')->delete($ip->certificate_path);

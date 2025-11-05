@@ -7,6 +7,7 @@ enum IpStatus: string
     case SUBMITTED     = 'submitted';
     case UNDER_REVIEW  = 'under_review';
     case REGISTERED    = 'registered';
+    case ACTIVE        = 'active';
     case REJECTED      = 'rejected';
     case EXPIRED       = 'expired';
 
@@ -17,6 +18,7 @@ enum IpStatus: string
             self::SUBMITTED => 'ยื่นคำขอ',
             self::UNDER_REVIEW => 'รอพิจารณา',
             self::REGISTERED => 'จดทะเบียนแล้ว',
+            self::ACTIVE => 'ใช้งานอยู่',
             self::REJECTED => 'ปฏิเสธ',
             self::EXPIRED => 'หมดอายุ',
         };

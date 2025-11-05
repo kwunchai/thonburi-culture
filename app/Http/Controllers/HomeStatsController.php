@@ -9,10 +9,10 @@ use Carbon\Carbon;
 
 // ปรับให้ตรงกับโมเดลจริงของโปรเจ็กต์คุณ
 use App\Models\CulturalItem;
-use App\Models\Research;
+// use App\Models\Research; // Table not exists
 use App\Models\IntellectualProperty;
-use App\Models\Innovation;
-use App\Models\Place;
+// use App\Models\Innovation; // Table not exists  
+// use App\Models\Place; // Table not exists
 use App\Models\Community;
 
 class HomeStatsController extends Controller
@@ -46,10 +46,13 @@ class HomeStatsController extends Controller
                 'labels' => $labels,
                 'line' => [
                     'cultural' => $seriesFor(CulturalItem::class),
-                    'research' => $seriesFor(Research::class),
+                    // 'research' => $seriesFor(Research::class), // Table not exists
+                    'research' => array_fill(0, 12, 0), // Dummy data
                     'ip'       => $seriesFor(IntellectualProperty::class),
-                    'innov'    => $seriesFor(Innovation::class),
-                    'places'   => $seriesFor(Place::class),
+                    // 'innov'    => $seriesFor(Innovation::class), // Table not exists 
+                    'innov'    => array_fill(0, 12, 0), // Dummy data
+                    // 'places'   => $seriesFor(Place::class), // Table not exists
+                    'places'   => array_fill(0, 12, 0), // Dummy data
                 ],
                 'ipTypes' => IntellectualProperty::select('type', DB::raw('COUNT(*) c'))
                     ->groupBy('type')->pluck('c', 'type'), // {"GI":10,"copyright":5,...}

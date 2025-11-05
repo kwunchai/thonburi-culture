@@ -30,6 +30,18 @@ class IntellectualProperty extends Model
     }
 
     /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where('ip_id', $value)->first();
+    }
+
+    /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
