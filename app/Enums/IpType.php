@@ -10,6 +10,10 @@ enum IpType: string
     case TRADEMARK          = 'trademark';
     case GI                 = 'gi';
     case TK                 = 'tk';
+    case PATENT             = 'patent';
+    case LOCAL_WISDOM       = 'local_wisdom';
+    case TRADE_SECRET       = 'trade_secret';
+    case OTHER              = 'other';
 
     public function label(): string
     {
@@ -21,6 +25,10 @@ enum IpType: string
             self::TRADEMARK => 'เครื่องหมายการค้า',
             self::GI => 'GI',
             self::TK => 'ภูมิปัญญาดั้งเดิม',
+            self::PATENT => 'สิทธิบัตร',
+            self::LOCAL_WISDOM => 'ภูมิปัญญาท้องถิ่น',
+            self::TRADE_SECRET => 'ความลับทางการค้า',
+            self::OTHER => 'อื่นๆ',
         };
     }
 }

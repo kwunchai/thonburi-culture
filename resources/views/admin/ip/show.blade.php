@@ -23,26 +23,6 @@
     </div>
 </div>
 
-<!-- Action Buttons -->
-<div class="row mb-3">
-    <div class="col-12">
-        <a href="{{ route('admin.ip.edit', $ip->ip_id) }}" class="btn btn-warning">
-            <i class="fas fa-edit"></i> แก้ไข
-        </a>
-        <a href="{{ route('admin.ip.index') }}" class="btn btn-secondary ml-2">
-            <i class="fas fa-arrow-left"></i> กลับไปรายการ
-        </a>
-        <form action="{{ route('admin.ip.destroy', $ip->ip_id) }}" method="POST" class="d-inline ml-2"
-              onsubmit="return confirm('ยืนยันการลบข้อมูลนี้?')">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-danger">
-                <i class="fas fa-trash"></i> ลบ
-            </button>
-        </form>
-    </div>
-</div>
-
 <!-- Main Information Card -->
 <div class="row">
     <div class="col-lg-8">
@@ -80,7 +60,7 @@
                                 @default badge-secondary
                             @endswitch
                         ">
-                            {{ $ip->type_name }}
+                            {{ $ip->type_label }}
                         </span>
                     </div>
                     <div class="col-md-6">
@@ -95,7 +75,7 @@
                                 @default badge-light
                             @endswitch
                         ">
-                            {{ $ip->status_name }}
+                            {{ $ip->status_label }}
                         </span>
                     </div>
                 </div>
@@ -218,7 +198,7 @@
                     </button>
                 @endif
                 
-                <a href="{{ route('admin.ip.edit', $ip->ip_id) }}" class="btn btn-primary btn-block">
+                <a href="{{ route('admin.ip.edit', $ip) }}" class="btn btn-primary btn-block">
                     <i class="fas fa-edit"></i> แก้ไขข้อมูล
                 </a>
             </div>
@@ -243,7 +223,7 @@ function changeStatus(newStatus) {
         // สร้าง form สำหรับส่งข้อมูล
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ route("admin.ip.update", $ip->ip_id) }}';
+        form.action = '{{ route("admin.ip.update", $ip) }}';
         
         // เพิ่ม CSRF token
         const csrfToken = document.createElement('input');
@@ -272,12 +252,4 @@ function changeStatus(newStatus) {
     }
 }
 </script>
-@endsection
-    </dl>
-
-    @if($ip->remark)
-    <div class="pt-3 border-t text-sm"><span class="text-slate-500">หมายเหตุ:</span> {{ $ip->remark }}</div>
-    @endif
-  </div>
-</section>
 @endsection
