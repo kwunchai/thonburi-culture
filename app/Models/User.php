@@ -41,8 +41,28 @@ class User extends Authenticatable
         return $this->role === 'editor';
     }
 
+    public function isIpManager(): bool
+    {
+        return $this->role === 'ip_manager';
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->role === 'viewer';
+    }
+
+    public function canManageIp(): bool
+    {
+        return in_array($this->role, ['admin', 'ip_manager']);
+    }
+
     public function culturalItems()
     {
         return $this->hasMany(CulturalItem::class, 'created_by');
+    }
+
+    public function intellectualProperties()
+    {
+        return $this->hasMany(IntellectualProperty::class, 'created_by');
     }
 }

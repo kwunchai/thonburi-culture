@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin') | วัฒนธรรมเขตธนบุรี</title>
+    <title>@yield('title', 'Admin') | ฐานข้อมูลเขตธนบุรี</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -22,6 +22,18 @@
         .small-box.bg-orange .icon, .small-box.bg-indigo .icon { 
             color: rgba(255,255,255,.15); 
         }
+        
+        /* Purple badge and alert styles */
+        .badge-purple { 
+            background-color: #6f42c1 !important; 
+            color: white !important; 
+        }
+        .alert-purple { 
+            background-color: #e2d8f0 !important; 
+            border-color: #b794d1 !important; 
+            color: #553c9a !important; 
+        }
+        .text-purple { color: #6f42c1 !important; }
     </style>
 </head>
 <body class="hold-transition sidebar-mini">
@@ -48,8 +60,8 @@
 
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="{{ route('admin.dashboard') }}" class="brand-link">
-            <span class="brand-text font-weight-light ml-3">วัฒนธรรมเขตธนบุรี</span>
+        <a href="{{ route('home') }}" class="brand-link">
+            <span class="brand-text font-weight-light ml-3">ฐานข้อมูลเขตธนบุรี</span>
         </a>
 
         <div class="sidebar">
@@ -119,12 +131,21 @@
                     </li>
 
                     {{-- ทรัพย์สินทางปัญญา --}}
-                    <li class="nav-item">
-                        <a href="{{ route('admin.ip.index') }}" 
-                            class="nav-link {{ request()->routeIs('admin.ip.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-certificate"></i><p>ทรัพย์สินทางปัญญา</p>
-                        </a>
-                    </li>
+                    @if(auth()->user() && in_array(auth()->user()->role, ['admin', 'ip_manager']))
+                        <li class="nav-item">
+                            <a href="{{ route('admin.ip.index') }}" 
+                                class="nav-link {{ request()->routeIs('admin.ip.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-certificate"></i>
+                                <p>
+                                    ทรัพย์สินทางปัญญา
+                                    @php
+                                    $ipCount = \App\Models\IntellectualProperty::count();
+                                    @endphp
+                                    <span class="badge badge-primary right">{{ $ipCount }}</span>
+                                </p>
+                            </a>
+                        </li>
+                    @endif
 
                     {{-- ข้อมูลนวัตกรรมที่จดทรัพย์สินทางปัญญา --}}
                     <li class="nav-item">
@@ -141,6 +162,21 @@
                             class="nav-link {{ request()->routeIs('admin.places.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-map-pin"></i>
                             <p>ปักหมุดสถานที่</p>
+                        </a>
+                    </li>
+
+                    {{-- จัดการสิทธิ์ผู้ใช้งาน --}}
+                    <li class="nav-item">
+                        <a href="{{ route('admin.users.index') }}" 
+                            class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users-cog"></i>
+                            <p>
+                                จัดการสิทธิ์ผู้ใช้งาน
+                                @php
+                                $userCount = \App\Models\User::count();
+                                @endphp
+                                <span class="badge badge-primary right">{{ $userCount }}</span>
+                            </p>
                         </a>
                     </li>
 
@@ -172,7 +208,7 @@
     </div>
 
     <footer class="main-footer">
-        <strong>&copy; {{ date('Y') }} วัฒนธรรมเขตธนบุรี.</strong>
+        <strong>&copy; {{ date('Y') }} ฐานข้อมูลเขตธนบุรี.</strong>
     </footer>
 </div>
 

@@ -138,92 +138,126 @@
 </div>
 
 <!-- Search and Filter Section -->
-<div class="mb-4">
-    <form method="GET" action="{{ route('admin.ip.index') }}">
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-search"></i> ค้นหาและกรองข้อมูล
+        </h3>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ route('admin.ip.index') }}">
             <div class="row">
                 <div class="col-md-4">
-                    <div class="input-group">
+                    <div class="form-group">
+                        <label>ค้นหา</label>
                         <input type="text" name="search" class="form-control" 
-                               placeholder="ค้นหาชื่อ, เลขทะเบียน..." 
+                               placeholder="ชื่อ, เลขทะเบียน..." 
                                value="{{ request('search') }}">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="submit">
-                                <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>ประเภท</label>
+                        <select name="type" class="form-control">
+                            <option value="">ทุกประเภท</option>
+                            @foreach(\App\Enums\IpType::cases() as $type)
+                                <option value="{{ $type->value }}" {{ request('type') == $type->value ? 'selected' : '' }}>
+                                    {{ $type->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>สถานะ</label>
+                        <select name="status" class="form-control">
+                            <option value="">ทุกสถานะ</option>
+                            @foreach(\App\Enums\IpStatus::cases() as $status)
+                                <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
+                                    {{ $status->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>เรียงลำดับ</label>
+                        <select name="order" class="form-control">
+                            <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>ใหม่→เก่า</option>
+                            <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>เก่า→ใหม่</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-info btn-block">
+                                <i class="fas fa-search"></i> ค้นหา
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <select name="type" class="form-control" onchange="this.form.submit()">
-                        <option value="">ทุกประเภท</option>
-                        @foreach(\App\Enums\IpType::cases() as $type)
-                            <option value="{{ $type->value }}" {{ request('type') == $type->value ? 'selected' : '' }}>
-                                {{ $type->label() }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="status" class="form-control" onchange="this.form.submit()">
-                        <option value="">ทุกสถานะ</option>
-                        @foreach(\App\Enums\IpStatus::cases() as $status)
-                            <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
-                                {{ $status->label() }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select name="order" class="form-control" onchange="this.form.submit()">
-                        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>ใหม่→เก่า</option>
-                        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>เก่า→ใหม่</option>
-                    </select>
-                </div>
-                @if(request('search') || request('type') || request('status') || request('order') != 'desc')
-                <div class="col-md-2">
-                    <a href="{{ route('admin.ip.index') }}" class="btn btn-default btn-block">
-                        <i class="fas fa-times"></i> ล้างการค้นหา
-                    </a>
-                </div>
-                @endif
             </div>
+            @if(request('search') || request('type') || request('status') || request('order') != 'desc')
+                <div class="row">
+                    <div class="col-12">
+                        <a href="{{ route('admin.ip.index') }}" class="btn btn-default">
+                            <i class="fas fa-times"></i> ล้างการค้นหา
+                        </a>
+                    </div>
+                </div>
+            @endif
         </form>
     </div>
+</div>
 
-    <!-- Header Section -->
-    <div class="row align-items-center mb-3">
-        <div class="col-md-6">
-            <h3 class="mb-0">
-                <i class="fas fa-shield-alt"></i> รายการทรัพย์สินทางปัญญา
-                @if(request('search'))
-                    <small class="text-muted">(ผลการค้นหา: "{{ request('search') }}")</small>
-                @endif
-            </h3>
-        </div>
-        <div class="col-md-6 text-right">
+<!-- Header Section -->
+<div class="row align-items-center mb-3">
+    <div class="col-md-6">
+        <h3 class="mb-0">
+            <i class="fas fa-shield-alt"></i> รายการทรัพย์สินทางปัญญา
+            @if(request('search'))
+                <small class="text-muted">(ผลการค้นหา: "{{ request('search') }}")</small>
+            @endif
+        </h3>
+    </div>
+    <div class="col-md-6 text-right">
+        <div class="btn-group">
             <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> เพิ่มข้อมูลใหม่
+                <i class="fas fa-plus"></i> เพิ่มทรัพย์สินใหม่
             </a>
-            <a href="{{ route('admin.ip.export') }}" class="btn btn-success">
-                <i class="fas fa-file-excel"></i> Export CSV
-            </a>
+        </div>
+        <div class="btn-group ml-2">
+            <button type="button" class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown">
+                <i class="fas fa-download"></i> ส่งออกข้อมูล
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="{{ route('admin.ip.export', array_merge(request()->all(), ['export' => 'excel'])) }}">
+                    <i class="fas fa-file-excel text-success"></i> ส่งออก Excel
+                </a>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Data Table -->
-    @if($items->count() > 0)
+<!-- Data Table -->
+@if($items->count() > 0)
+    <div class="card">
         <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th style="width: 120px;">เลขทะเบียน</th>
-                            <th>ชื่อเรื่อง</th>
-                            <th style="width: 100px;">ประเภท</th>
-                            <th style="width: 100px;">สถานะ</th>
-                            <th style="width: 100px;">วันที่ลงทะเบียน</th>
-                            <th style="width: 120px;" class="text-center">การจัดการ</th>
-                        </tr>
-                    </thead>
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th><i class="fas fa-id-card"></i> เลขทะเบียน</th>
+                        <th><i class="fas fa-file-alt"></i> ชื่อเรื่อง</th>
+                        <th><i class="fas fa-tag"></i> ประเภท</th>
+                        <th><i class="fas fa-info-circle"></i> สถานะ</th>
+                        <th><i class="fas fa-calendar"></i> วันที่ลงทะเบียน</th>
+                        <th class="text-center" width="150"><i class="fas fa-cogs"></i> การจัดการ</th>
+                    </tr>
+                </thead>
                     <tbody>
                         @foreach($items as $item)
                             <tr>
@@ -280,22 +314,22 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('admin.ip.show', $item) }}" 
-                                           class="btn btn-info btn-xs" title="ดูรายละเอียด">
-                                            <i class="fas fa-eye fa-sm"></i>
+                                           class="btn btn-sm btn-info" title="ดูรายละเอียด">
+                                            <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="{{ route('admin.ip.edit', $item) }}" 
-                                           class="btn btn-warning btn-xs" title="แก้ไข">
-                                            <i class="fas fa-edit fa-sm"></i>
+                                           class="btn btn-sm btn-warning" title="แก้ไข">
+                                            <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ route('admin.ip.destroy', $item) }}" 
                                               method="POST" class="d-inline"
                                               onsubmit="return confirm('ยืนยันการลบข้อมูลนี้?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-xs" title="ลบ">
-                                                <i class="fas fa-trash fa-sm"></i>
+                                            <button type="submit" class="btn btn-sm btn-danger" title="ลบ">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -305,40 +339,81 @@
                     </tbody>
                 </table>
             </div>
-        @else
-            <div class="text-center py-5">
-                <div class="mb-3">
-                    <i class="fas fa-shield-alt fa-2x text-muted"></i>
-                </div>
+        </div>
+    @else
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">ไม่พบข้อมูลทรัพย์สินทางปัญญา</h5>
-                @if(request('search'))
-                    <p class="text-muted mb-3">ไม่พบผลการค้นหาสำหรับ "{{ request('search') }}"</p>
-                    <a href="{{ route('admin.ip.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i> กลับไปดูทั้งหมด
+                @if(request('search') || request('type') || request('status'))
+                    <p class="text-muted">ลองปรับเงื่อนไขการค้นหาใหม่</p>
+                    <a href="{{ route('admin.ip.index') }}" class="btn btn-default">
+                        <i class="fas fa-times"></i> ล้างการค้นหา
                     </a>
                 @else
-                    <p class="text-muted mb-3">เริ่มต้นด้วยการเพิ่มทรัพย์สินทางปัญญาแรกของคุณ</p>
+                    <p class="text-muted">เริ่มต้นด้วยการเพิ่มทรัพย์สินทางปัญญาใหม่</p>
                     <a href="{{ route('admin.ip.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus mr-1"></i> เพิ่มทรัพย์สินทางปัญญา
+                        <i class="fas fa-plus"></i> เพิ่มทรัพย์สินใหม่
                     </a>
                 @endif
             </div>
-        @endif
+        </div>
+    @endif
 
-        <!-- Pagination -->
-        @if($items->hasPages())
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <div>
-                    <small class="text-muted">
-                        แสดง {{ $items->firstItem() }}-{{ $items->lastItem() }} 
-                        จากทั้งหมด {{ $items->total() }} รายการ
-                    </small>
+<!-- Pagination -->
+@if($items->hasPages())
+    <div class="card mt-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">
+                        แสดง {{ $items->firstItem() }} ถึง {{ $items->lastItem() }} จากทั้งหมด {{ $items->total() }} รายการ
+                    </p>
                 </div>
-                <div>
-                    {{ $items->links('pagination.custom') }}
+                <div class="col-md-6">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-end mb-0">
+                            {{-- Previous Page Link --}}
+                            @if ($items->onFirstPage())
+                                <li class="page-item disabled">
+                                    <span class="page-link">« ก่อนหน้า</span>
+                                </li>
+                            @else
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $items->previousPageUrl() }}">« ก่อนหน้า</a>
+                                </li>
+                            @endif
+
+                            {{-- Pagination Elements --}}
+                            @foreach ($items->getUrlRange(1, $items->lastPage()) as $page => $url)
+                                @if ($page == $items->currentPage())
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ $page }}</span>
+                                    </li>
+                                @else
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                    </li>
+                                @endif
+                            @endforeach
+
+                            {{-- Next Page Link --}}
+                            @if ($items->hasMorePages())
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $items->nextPageUrl() }}">ถัดไป »</a>
+                                </li>
+                            @else
+                                <li class="page-item disabled">
+                                    <span class="page-link">ถัดไป »</span>
+                                </li>
+                            @endif
+                        </ul>
+                    </nav>
                 </div>
             </div>
-        @endif
+        </div>
+    </div>
+@endif
 
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show mt-3">

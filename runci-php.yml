@@ -1,0 +1,84 @@
+name: Run tests and build assets
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  tests-and-build:
+    name: Run tests and build assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: zip, pdo, pdo_sqlite, fileinfo
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Node dependencies & build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare environment file
+        run: |
+          if [ ! -f .env ]; then cp .env.example .env || true; fi
+          php artisan key:generate --ansi --no-interaction
+
+      - name: Configure testing DB (sqlite)
+        run: |
+          # Use sqlite for CI tests
+          php -r "file_exists('phpunit.xml') || copy('phpunit.xml.dist','phpunit.xml');"
+          php -r '$xml = file_get_contents("phpunit.xml"); $xml = str_replace("<env name=\"DB_CONNECTION\" value=\"mysql\"/>","<env name=\"DB_CONNECTION\" value=\"sqlite\"/>", $xml); file_put_contents("phpunit.xml", $xml);'
+
+      - name: Run migrations
+        env:
+          DB_CONNECTION: sqlite
+        run: |
+          php artisan migrate --force
+
+      - name: Run tests (Pest)
+        run: |
+          ./vendor/bin/pest --colors=always
+
+      - name: Upload built assets (artifact)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-assets
+          path: public/build

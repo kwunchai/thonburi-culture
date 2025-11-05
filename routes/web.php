@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/explore', [FrontendController::class, 'explore'])->name('cultural.explore');
+Route::get('/explore-test', function() {
+    $controller = new \App\Http\Controllers\FrontendController();
+    $response = $controller->explore(request());
+    $data = $response->getData();
+    return view('frontend.explore_test', $data);
+})->name('explore.test');
 Route::get('/category/{slug}', [FrontendController::class, 'category'])->name('category');
 Route::get('/cultural-item/{id}', [FrontendController::class, 'show'])->name('cultural-item.show');
 Route::get('/community/{id}', [FrontendController::class, 'community'])->name('community');
@@ -30,8 +36,8 @@ Route::get('/map', [FrontendController::class, 'map'])->name('map');
 Route::get('/news', [FrontendController::class, 'news'])->name('news');
 Route::get('/gallery', [FrontendController::class, 'gallery'])->name('gallery');
 Route::get('/sitemap.xml', [FrontendController::class, 'sitemap'])->name('sitemap');
-Route::get('/ip', [IpController::class,'index'])->name('ip.index');
-Route::get('/ip/{ip:slug}', [IpController::class,'show'])->name('ip.show');
+Route::get('/ip', [IpController::class,'index'])->name('ip.public.index');
+Route::get('/ip/{ip:slug}', [IpController::class,'show'])->name('ip.public.show');
 
 // Route for public stats (JSON)
 Route::get('/stats/home', [HomeStatsController::class, 'index'])

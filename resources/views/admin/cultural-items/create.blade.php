@@ -61,6 +61,33 @@
                 @enderror
             </div>
 
+            <!-- Google Maps Location Picker -->
+            <div class="form-group">
+                <label>ตำแหน่งที่ตั้ง</label>
+                <p class="text-muted small">คลิกและลากหมุดบนแผนที่เพื่อระบุตำแหน่งที่ตั้งของข้อมูลวัฒนธรรม</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="latitude">ละติจูด</label>
+                        <input type="number" step="any" name="latitude" id="latitude" class="form-control @error('latitude') is-invalid @enderror" 
+                               value="{{ old('latitude', config('maps.default_coordinates.latitude')) }}" readonly>
+                        @error('latitude')
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label for="longitude">ลองจิจูด</label>
+                        <input type="number" step="any" name="longitude" id="longitude" class="form-control @error('longitude') is-invalid @enderror" 
+                               value="{{ old('longitude', config('maps.default_coordinates.longitude')) }}" readonly>
+                        @error('longitude')
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div id="map-picker" style="height: 400px; border: 1px solid #ddd; border-radius: 0.25rem;"></div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -98,4 +125,92 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<!-- Google Maps JavaScript API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&callback=initMapPicker&libraries=places"></script>
+
+<script>
+let map;
+let marker;
+let geocoder;
+
+function initMapPicker() {
+    // ตำแหน่งเริ่มต้น (ธนบุรี, กรุงเทพฯ)
+    const defaultPosition = {
+        lat: {{ config('maps.default_coordinates.latitude') }},
+        lng: {{ config('maps.default_coordinates.longitude') }}
+    };
+
+    // สร้างแผนที่
+    map = new google.maps.Map(document.getElementById('map-picker'), {
+        zoom: {{ config('maps.map_defaults.zoom') }},
+        center: defaultPosition,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+
+    // สร้าง Geocoder
+    geocoder = new google.maps.Geocoder();
+
+    // สร้างหมุดที่สามารถลากได้
+    marker = new google.maps.Marker({
+        position: defaultPosition,
+        map: map,
+        draggable: true,
+        title: 'ลากหมุดเพื่อเลือกตำแหน่ง',
+        animation: google.maps.Animation.DROP
+    });
+
+    // อัปเดตพิกัดเมื่อลากหมุด
+    marker.addListener('dragend', function() {
+        const position = marker.getPosition();
+        updateCoordinates(position.lat(), position.lng());
+    });
+
+    // อัปเดตหมุดเมื่อคลิกบนแผนที่
+    map.addListener('click', function(event) {
+        const position = event.latLng;
+        marker.setPosition(position);
+        updateCoordinates(position.lat(), position.lng());
+    });
+
+    // อัปเดตแผนที่เมื่อกรอกพิกัดด้วยตนเอง
+    document.getElementById('latitude').addEventListener('change', function() {
+        updateMapFromCoordinates();
+    });
+
+    document.getElementById('longitude').addEventListener('change', function() {
+        updateMapFromCoordinates();
+    });
+}
+
+function updateCoordinates(lat, lng) {
+    document.getElementById('latitude').value = lat.toFixed(8);
+    document.getElementById('longitude').value = lng.toFixed(8);
+}
+
+function updateMapFromCoordinates() {
+    const lat = parseFloat(document.getElementById('latitude').value);
+    const lng = parseFloat(document.getElementById('longitude').value);
+    
+    if (!isNaN(lat) && !isNaN(lng)) {
+        const position = new google.maps.LatLng(lat, lng);
+        marker.setPosition(position);
+        map.setCenter(position);
+    }
+}
+
+// จัดการกรณีที่ API ไม่โหลด
+window.addEventListener('load', function() {
+    if (typeof google === 'undefined') {
+        document.getElementById('map-picker').innerHTML = 
+            '<div class="alert alert-warning text-center p-4">' +
+            '<i class="fas fa-exclamation-triangle"></i> ' +
+            'ไม่สามารถโหลด Google Maps API ได้<br>' +
+            '<small>กรุณาตรวจสอบการตั้งค่า API Key</small>' +
+            '</div>';
+    }
+});
+</script>
+@endpush
 @endsection

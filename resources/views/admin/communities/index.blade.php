@@ -106,12 +106,21 @@
             </h3>
         </div>
         <div class="col-md-6 text-right">
-            <a href="{{ route('admin.communities.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> เพิ่มชุมชนใหม่
-            </a>
-            <a href="{{ route('admin.communities.export') }}" class="btn btn-success">
-                <i class="fas fa-file-excel"></i> Export CSV
-            </a>
+            <div class="btn-group">
+                <a href="{{ route('admin.communities.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> เพิ่มชุมชนใหม่
+                </a>
+            </div>
+            <div class="btn-group ml-2">
+                <button type="button" class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown">
+                    <i class="fas fa-download"></i> ส่งออกข้อมูล
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ route('admin.communities.export', array_merge(request()->all(), ['export' => 'excel'])) }}">
+                        <i class="fas fa-file-excel text-success"></i> ส่งออก Excel
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 

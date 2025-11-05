@@ -35,7 +35,7 @@
 
   <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
     @forelse($items as $ip)
-      <a href="{{ route('ip.show',$ip) }}" class="block rounded-xl border bg-white p-4 hover:shadow">
+      <a href="{{ route('ip.public.show',$ip) }}" class="block rounded-xl border bg-white p-4 hover:shadow">
         <div class="text-xs text-slate-500">{{ $ip->application_no ?? '—' }}</div>
         <h3 class="mt-1 font-semibold line-clamp-2">{{ $ip->title }}</h3>
         <div class="mt-2 flex items-center gap-2 text-sm">

@@ -1,4 +1,4 @@
-<?php
+    <?php
 // Simple PHP test - no Laravel dependencies
 
 echo "Simple PHP Test Works!<br>";

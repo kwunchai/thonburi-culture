@@ -1,0 +1,18 @@
+[build]
+buildCommand = "php -r \"file_exists('.env') || copy('.env.example', '.env');\" && composer install --optimize-autoloader --no-dev && php artisan key:generate --ansi && npm ci && npm run build && php artisan config:cache && php artisan event:cache && php artisan route:cache && php artisan view:cache"
+watchPatterns = ["app/**", "config/**", "database/**", "resources/**", "routes/**", "composer.json", "composer.lock", "package.json", "package-lock.json"]
+
+[deploy]
+startCommand = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[environments.production.variables]
+APP_ENV = "production"
+APP_DEBUG = "false"
+LOG_LEVEL = "error"
+SESSION_DRIVER = "database"
+CACHE_DRIVER = "database"
+QUEUE_CONNECTION = "database"

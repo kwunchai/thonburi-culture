@@ -7,6 +7,9 @@ use App\Models\CulturalCategory;
 use App\Models\Community;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class FrontendController extends Controller
 {
@@ -16,14 +19,14 @@ class FrontendController extends Controller
     public function home()
     {
         // เคลียร์ cache ทั้งหมดก่อน
-        \Cache::flush();
+        Cache::flush();
         
         // Log debug information
-        \Log::info('FrontendController@home called at: ' . now());
+        Log::info('FrontendController@home called at: ' . now());
         
         // ตรวจสอบข้อมูลที่มี is_featured = 1 ในฐานข้อมูล
         $rawFeaturedCount = DB::table('cultural_items')->where('is_featured', 1)->count();
-        \Log::info('Raw featured count from DB: ' . $rawFeaturedCount);
+        Log::info('Raw featured count from DB: ' . $rawFeaturedCount);
         
         // Force fresh data without cache - ใช้ fresh query
         $featuredItems = CulturalItem::query()
@@ -36,7 +39,7 @@ class FrontendController extends Controller
             ->get()
             ->fresh();  // Force reload from database
         
-        \Log::info('Final featured items count: ' . $featuredItems->count());
+        Log::info('Final featured items count: ' . $featuredItems->count());
         
         // Double check - filter อีกครั้งเพื่อให้แน่ใจ
         $featuredItems = $featuredItems->filter(function($item) {
@@ -45,11 +48,11 @@ class FrontendController extends Controller
             return $fresh && $fresh->is_featured == 1;
         });
         
-        \Log::info('After filtering featured items count: ' . $featuredItems->count());
+        Log::info('After filtering featured items count: ' . $featuredItems->count());
         
         // Debug each item
         foreach($featuredItems as $item) {
-            \Log::info("Item ID: {$item->id}, is_featured: {$item->is_featured}, title: {$item->title}");
+            Log::info("Item ID: {$item->id}, is_featured: {$item->is_featured}, title: {$item->title}");
         }
         
         // ถ้าไม่มี featured items หรือมีน้อยกว่า 4 ให้ดึงรายการล่าสุดมาเติม
@@ -69,10 +72,10 @@ class FrontendController extends Controller
             $featuredItems = $featuredItems->concat($additionalItems);
         }
         
-        // ดึงหมวดหมู่พร้อมนับจำนวนรายการ
-        $categories = CulturalCategory::withCount(['culturalItems' => function($query) {
-            $query->published();
-        }])->orderBy('name')->get();
+        // ไม่ต้องดึงหมวดหมู่แล้ว - ถูกลบออกจากหน้าแรก
+        // $categories = CulturalCategory::withCount(['culturalItems' => function($query) {
+        //     $query->published();
+        // }])->orderBy('name')->get();
         
         // ดึงข้อมูลวัฒนธรรมล่าสุด (ไม่รวม featured items)
         $featuredIds = $featuredItems->pluck('id')->toArray();
@@ -93,24 +96,129 @@ class FrontendController extends Controller
                 ->get();
         }
         
-        // ดึงข้อมูลชุมชนทั้งหมด
-        $communities = Community::withCount(['culturalItems' => function($query) {
-            $query->published();
-        }])->orderBy('name')->get();
+        // ไม่ต้องดึงข้อมูลชุมชนแล้ว - ถูกลบออกจากหน้าแรก
+        // $communities = Community::withCount(['culturalItems' => function($query) {
+        //     $query->published();
+        // }])->orderBy('name')->get();
         
         // ดึงสถิติสำหรับแสดง
         $stats = [
             'total_items' => CulturalItem::published()->count(),
             'total_categories' => CulturalCategory::count(),
             'total_communities' => Community::count(),
+            'total_innovations' => rand(8, 18), // ข้อมูลตัวอย่างสำหรับนวัตกรรม
+            'total_research' => rand(15, 25), // ข้อมูลตัวอย่างสำหรับงานวิจัย
+            'total_ip' => rand(10, 20), // ข้อมูลตัวอย่างสำหรับทรัพย์สินทางปัญญา
         ];
 
         return view('frontend.home', compact(
             'featuredItems', 
-            'categories', 
             'latestItems', 
-            'communities',
             'stats'
+        ));
+    }
+
+    /**
+     * แสดงหน้าสำรวจวัฒนธรรม - สำหรับการค้นหาและเรียกดูข้อมูลวัฒนธรรม
+     */
+    public function explore(Request $request)
+    {
+        // รับ parameters จาก URL
+        $search = $request->get('search', '');
+        $category_id = $request->get('category_id', '');
+        $community_id = $request->get('community_id', '');
+        $sort = $request->get('sort', 'latest');
+        $per_page = $request->get('per_page', 12);
+
+        // Query builder สำหรับ cultural items
+        $query = CulturalItem::with(['category', 'community', 'creator'])
+            ->published();
+
+        // ค้นหาตามคำค้นหา
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%")
+                  ->orWhere('content', 'LIKE', "%{$search}%")
+                  ->orWhere('tags', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // กรองตามหมวดหมู่
+        if (!empty($category_id)) {
+            $query->where('category_id', $category_id);
+        }
+
+        // กรองตามชุมชน
+        if (!empty($community_id)) {
+            $query->where('community_id', $community_id);
+        }
+
+        // เรียงลำดับ
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('publish_date', 'asc');
+                break;
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'title_desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'popular':
+                // ใช้ created_at แทน view_count เพื่อหาข้อมูลที่น่าสนใจ
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('publish_date', 'desc');
+                break;
+        }
+
+        // Pagination
+        $items = $query->paginate($per_page)->appends($request->query());
+
+        // ข้อมูลสำหรับ filters
+        $categories = CulturalCategory::withCount(['culturalItems' => function($query) {
+            $query->published();
+        }])->orderBy('name')->get();
+
+        $communities = Community::withCount(['culturalItems' => function($query) {
+            $query->published();
+        }])->orderBy('name')->get();
+
+        // สถิติการค้นหา
+        $stats = [
+            'total_found' => $items->total(),
+            'total_items' => CulturalItem::published()->count(),
+            'total_categories' => $categories->count(),
+            'total_communities' => $communities->count()
+        ];
+
+        // รายการที่นิยม (สำหรับ sidebar) - ใช้ random แทน view_count
+        $popularItems = CulturalItem::published()
+            ->inRandomOrder()
+            ->take(5)
+            ->get();
+
+        // รายการล่าสุด (สำหรับ sidebar)
+        $latestItems = CulturalItem::published()
+            ->orderBy('publish_date', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('frontend.explore', compact(
+            'items',
+            'categories', 
+            'communities',
+            'stats',
+            'popularItems',
+            'latestItems',
+            'search',
+            'category_id',
+            'community_id',
+            'sort',
+            'per_page'
         ));
     }
 
