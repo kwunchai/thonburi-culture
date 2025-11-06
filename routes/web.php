@@ -195,6 +195,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Health Check Routes
+|--------------------------------------------------------------------------
+| Simple health check routes for deployment monitoring.
+*/
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toISOString(),
+        'app' => 'thonburi-culture'
+    ]);
+});
+
+Route::get('/health/simple', function () {
+    return 'OK';
+});
+
+/*
+|--------------------------------------------------------------------------
 | Auth Routes
 |--------------------------------------------------------------------------
 | Routes from Laravel Breeze for authentication.
