@@ -3,11 +3,11 @@ buildCommand = "php -r \"file_exists('.env') || copy('.env.example', '.env');\" 
 watchPatterns = ["app/**", "config/**", "database/**", "resources/**", "routes/**", "composer.json", "composer.lock", "package.json", "package-lock.json"]
 
 [deploy]
-startCommand = "php artisan route:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
+startCommand = "php artisan route:clear && php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
 healthcheckPath = "/health.php"
-healthcheckTimeout = 300
+healthcheckTimeout = 120
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10
+restartPolicyMaxRetries = 3
 
 [environments.production.variables]
 APP_ENV = "production"
@@ -16,3 +16,6 @@ LOG_LEVEL = "error"
 SESSION_DRIVER = "database"
 CACHE_DRIVER = "database"
 QUEUE_CONNECTION = "database"
+DB_CONNECTION = "mysql"
+BROADCAST_DRIVER = "log"
+FILESYSTEM_DISK = "local"
