@@ -198,17 +198,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
 | Health Check Routes
 |--------------------------------------------------------------------------
 | Simple health check routes for deployment monitoring.
+| Railway-compatible with hostname verification.
 */
 Route::get('/health', function () {
+    $host = request()->getHost();
+    $userAgent = request()->userAgent();
+    
+    // Check if this is a Railway request
+    $isRailway = str_contains($host, 'railway.app') || 
+                 str_contains($host, 'healthcheck.railway.app') ||
+                 str_contains(strtolower($userAgent ?? ''), 'railway');
+    
     return response()->json([
         'status' => 'ok',
         'timestamp' => now()->toISOString(),
-        'app' => 'thonburi-culture'
+        'app' => 'thonburi-culture',
+        'host' => $host,
+        'railway_request' => $isRailway,
+        'environment' => app()->environment()
     ]);
 });
 
 Route::get('/health/simple', function () {
     return 'OK';
+});
+
+// Railway-specific health check with detailed info
+Route::get('/health/railway', function () {
+    $request = request();
+    
+    return response()->json([
+        'status' => 'ok',
+        'service' => 'thonburi-culture',
+        'timestamp' => now()->toISOString(),
+        'host' => $request->getHost(),
+        'ip' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'headers' => $request->header(),
+        'environment' => app()->environment(),
+        'railway_compatible' => true
+    ]);
 });
 
 /*

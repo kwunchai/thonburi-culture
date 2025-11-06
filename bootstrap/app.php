@@ -12,9 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Add trusted hosts middleware for Railway compatibility
+        $middleware->append(\App\Http\Middleware\TrustedHosts::class);
+        
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'ip.permission' => \App\Http\Middleware\CheckIpPermission::class,
+            'trusted.hosts' => \App\Http\Middleware\TrustedHosts::class,
         ]);
     })
     
