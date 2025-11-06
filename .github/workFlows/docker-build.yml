@@ -45,7 +45,10 @@ jobs:
         sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=password/' .env
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --optimize-autoloader
+      run: composer install --prefer-dist --no-progress --optimize-autoloader --no-scripts
+
+    - name: Dump autoloader  
+      run: composer dump-autoload --optimize
 
     - name: Generate application key
       run: php artisan key:generate
