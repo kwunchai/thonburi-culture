@@ -52,22 +52,70 @@
     });
 
     // Social Share Functions
-    function shareOnFacebook() {
+    function shareToFacebook() {
         window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href), '_blank');
     }
 
-    function shareOnTwitter() {
+    function shareToTwitter() {
         window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent('{{ $item->title }}'), '_blank');
     }
 
-    function shareOnLine() {
+    function shareToLine() {
         window.open('https://line.me/R/msg/text/?' + encodeURIComponent('{{ $item->title }} ' + window.location.href), '_blank');
     }
 
-    function copyLink() {
+    function copyToClipboard() {
         navigator.clipboard.writeText(window.location.href).then(() => {
-            alert('ลิงก์ถูกคัดลอกแล้ว!');
-            closeShareModal();
+            // Show toast notification
+            showToast('ลิงก์ถูกคัดลอกแล้ว!');
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = window.location.href;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('ลิงก์ถูกคัดลอกแล้ว!');
         });
     }
+
+    // Toast notification function
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transform transition-transform duration-300 translate-y-[-100px]';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.transform = 'translate(0, 0)';
+        }, 100);
+        
+        setTimeout(() => {
+            toast.style.transform = 'translate(100%, 0)';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    }
+
+    // Smooth scrolling for table of contents
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Legacy functions for backwards compatibility
+    function shareOnFacebook() { shareToFacebook(); }
+    function shareOnTwitter() { shareToTwitter(); }
+    function shareOnLine() { shareToLine(); }
+    function copyLink() { copyToClipboard(); }
 </script>
