@@ -109,8 +109,91 @@
                     behavior: 'smooth',
                     block: 'start'
                 });
+                
+                // Update active state in TOC
+                document.querySelectorAll('a[href^="#"]').forEach(link => {
+                    link.classList.remove('border-orange-500', 'text-orange-600', 'bg-orange-50');
+                    link.classList.add('border-transparent', 'text-gray-700');
+                });
+                this.classList.remove('border-transparent', 'text-gray-700');
+                this.classList.add('border-orange-500', 'text-orange-600', 'bg-orange-50');
             }
         });
+    });
+
+    // Back to top button functionality
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Show/hide back to top button
+    window.addEventListener('scroll', function() {
+        const backToTopButton = document.getElementById('backToTop');
+        if (backToTopButton) {
+            if (window.scrollY > 500) {
+                backToTopButton.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                backToTopButton.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            } else {
+                backToTopButton.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                backToTopButton.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            }
+        }
+    });
+
+    // Bookmark functionality
+    function addToBookmark() {
+        if (typeof(Storage) !== "undefined") {
+            const bookmarks = JSON.parse(localStorage.getItem('cultural_bookmarks') || '[]');
+            const currentItem = {
+                id: '{{ $item->id }}',
+                title: '{{ addslashes($item->title) }}',
+                url: window.location.href,
+                date: new Date().toISOString()
+            };
+            
+            const existingIndex = bookmarks.findIndex(b => b.id === currentItem.id);
+            if (existingIndex > -1) {
+                bookmarks.splice(existingIndex, 1);
+                showToast('ลบออกจากรายการบันทึกแล้ว');
+            } else {
+                bookmarks.unshift(currentItem);
+                showToast('บันทึกลิงก์แล้ว');
+            }
+            
+            localStorage.setItem('cultural_bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkButton();
+        } else {
+            showToast('เบราว์เซอร์ไม่รองรับการบันทึกข้อมูล');
+        }
+    }
+
+    // Update bookmark button state
+    function updateBookmarkButton() {
+        if (typeof(Storage) !== "undefined") {
+            const bookmarks = JSON.parse(localStorage.getItem('cultural_bookmarks') || '[]');
+            const bookmarkBtn = document.querySelector('[onclick="addToBookmark()"]');
+            if (bookmarkBtn) {
+                const isBookmarked = bookmarks.some(b => b.id === '{{ $item->id }}');
+                const icon = bookmarkBtn.querySelector('i');
+                const text = bookmarkBtn.querySelector('span') || bookmarkBtn.childNodes[2];
+                
+                if (isBookmarked) {
+                    icon.className = 'fas fa-bookmark mr-2';
+                    if (text) text.textContent = 'บันทึกแล้ว';
+                } else {
+                    icon.className = 'far fa-bookmark mr-2';
+                    if (text) text.textContent = 'บันทึก';
+                }
+            }
+        }
+    }
+
+    // Initialize bookmark button state
+    document.addEventListener('DOMContentLoaded', function() {
+        updateBookmarkButton();
     });
 
     // Legacy functions for backwards compatibility
