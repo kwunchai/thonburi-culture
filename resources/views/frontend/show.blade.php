@@ -157,14 +157,6 @@
     {{-- Share Modal --}}
     @include('frontend.partials.cultural-item.share-modal')
 @endsection
-            </div>
-            
-        </div>
-    </div>
-    
-    {{-- Share Modal --}}
-    @include('frontend.partials.cultural-item.share-modal')
-@endsection
 
 @push('scripts')
     @include('frontend.partials.cultural-item.scripts')
