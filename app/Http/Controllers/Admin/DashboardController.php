@@ -8,6 +8,8 @@ use App\Models\CulturalCategory;
 use App\Models\Community;
 use App\Models\User;
 use App\Models\IntellectualProperty;
+use App\Models\Activity;
+use App\Models\ActivityCategory;
 
 class DashboardController extends Controller
 {
@@ -17,6 +19,7 @@ class DashboardController extends Controller
         $generalStats = [
             'communities' => Community::count(),
             'cultural_items' => CulturalItem::count(),
+            'activities' => Activity::count(),
             'intellectual_properties' => IntellectualProperty::count(),
             'research_data' => rand(15, 25), // สำหรับแสดงตัวอย่าง
             'innovations' => rand(8, 18), // สำหรับแสดงตัวอย่าง
@@ -48,6 +51,17 @@ class DashboardController extends Controller
             'monthly_data' => $this->getIPMonthlyData(),
         ];
 
+        // สถิติกิจกรรม
+        $activityStats = [
+            'total' => Activity::count(),
+            'active' => Activity::where('is_active', true)->count(),
+            'upcoming' => Activity::upcoming()->count(),
+            'past' => Activity::past()->count(),
+            'by_category' => $this->getActivitiesByCategory(),
+            'monthly_data' => $this->getActivitiesMonthlyData(),
+            'popular' => Activity::popular(5)->get(),
+        ];
+
         // สถิติข้อมูลงานวิจัย (ตัวอย่าง)
         $researchStats = [
             'total' => $generalStats['research_data'],
@@ -73,6 +87,10 @@ class DashboardController extends Controller
             'communities' => Community::orderBy('created_at', 'desc')
                 ->take(5)
                 ->get(),
+            'activities' => Activity::with(['category', 'creator'])
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'ip_items' => IntellectualProperty::orderBy('created_at', 'desc')
                 ->take(5)
                 ->get(),
@@ -81,7 +99,8 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'generalStats',
             'communityStats', 
-            'culturalStats', 
+            'culturalStats',
+            'activityStats',
             'ipStats',
             'researchStats',
             'innovationStats',
@@ -146,6 +165,42 @@ class DashboardController extends Controller
             $months[] = $date->format('M Y');
             // สร้างข้อมูลตัวอย่างสำหรับงานวิจัย
             $data[] = rand(0, 3);
+        }
+        
+        return compact('months', 'data');
+    }
+
+    // สถิติกิจกรรมตามหมวดหมู่
+    private function getActivitiesByCategory()
+    {
+        return ActivityCategory::withCount('activities')
+            ->active()
+            ->ordered()
+            ->get()
+            ->map(function($category) {
+                return [
+                    'name' => $category->name,
+                    'count' => $category->activities_count,
+                    'color' => $category->color,
+                    'percentage' => Activity::count() > 0 ? round(($category->activities_count / Activity::count()) * 100, 1) : 0
+                ];
+            });
+    }
+
+    // ข้อมูลกิจกรรมรายเดือน
+    private function getActivitiesMonthlyData()
+    {
+        $months = [];
+        $data = [];
+        
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $months[] = $date->format('M Y');
+            
+            $count = Activity::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+            $data[] = $count;
         }
         
         return compact('months', 'data');

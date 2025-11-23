@@ -31,6 +31,19 @@ class User extends Authenticatable
         ];
     }
 
+    public function hasRole($roles): bool
+    {
+        if (is_string($roles)) {
+            return $this->role === $roles;
+        }
+        
+        if (is_array($roles)) {
+            return in_array($this->role, $roles);
+        }
+        
+        return false;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

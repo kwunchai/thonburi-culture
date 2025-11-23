@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- Styles Stack --}}
+    @stack('styles')
+    
     <style>
         body { font-family: 'Sarabun', sans-serif; }
     </style>
@@ -27,30 +30,70 @@
                     </a>
                 </div>
                 
+                <!-- Desktop Menu -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="{{ route('home') }}" class="text-gray-700 hover:text-orange-600">หน้าแรก</a>
-                    <a href="{{ route('cultural.explore') }}" class="text-gray-700 hover:text-orange-600">สำรวจวัฒนธรรม</a>
-                    <a href="#" class="text-gray-700 hover:text-orange-600">บทความ</a>
-                    <a href="#" class="text-gray-700 hover:text-orange-600">กิจกรรม</a>
-                    <a href="#" class="text-gray-700 hover:text-orange-600">เกี่ยวกับ</a>
-                    <a href="#" class="text-gray-700 hover:text-orange-600">ค้นหา</a>
+                    <a href="{{ route('home') }}" class="text-gray-700 hover:text-orange-600 transition-colors duration-300">หน้าแรก</a>
+                    <a href="{{ route('cultural.explore') }}" class="text-gray-700 hover:text-orange-600 transition-colors duration-300">สำรวจวัฒนธรรม</a>
+                    <a href="{{ route('activities') }}" class="text-gray-700 hover:text-orange-600 transition-colors duration-300">กิจกรรม</a>
+                    <a href="{{ route('about') }}" class="text-gray-700 hover:text-orange-600 transition-colors duration-300">เกี่ยวกับเรา</a>
                     
                     @auth
-                        <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-orange-600">
+                        <a href="{{ route('admin.dashboard') }}" class="text-gray-700 hover:text-orange-600 transition-colors duration-300">
                             จัดการระบบ
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
-                            <button type="submit" class="text-gray-700 hover:text-orange-600">
+                            <button type="submit" class="text-gray-700 hover:text-orange-600 transition-colors duration-300">
                                 ออกจากระบบ
                             </button>
                         </form>
                     @else
-                        <a href="{{ route('login') }}" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+                        <a href="{{ route('login') }}" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300">
                             เข้าสู่ระบบ
                         </a>
                     @endauth
                 </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button type="button" id="mobile-menu-button" class="text-gray-700 hover:text-orange-600 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-4 py-3 space-y-3">
+                <a href="{{ route('home') }}" class="block text-gray-700 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-home mr-2"></i>หน้าแรก
+                </a>
+                <a href="{{ route('cultural.explore') }}" class="block text-gray-700 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-compass mr-2"></i>สำรวจวัฒนธรรม
+                </a>
+                <a href="{{ route('activities') }}" class="block text-gray-700 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-calendar-alt mr-2"></i>กิจกรรม
+                </a>
+                <a href="{{ route('about') }}" class="block text-gray-700 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-info-circle mr-2"></i>เกี่ยวกับเรา
+                </a>
+                
+                @auth
+                    <a href="{{ route('admin.dashboard') }}" class="block text-gray-700 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-cog mr-2"></i>จัดการระบบ
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left text-gray-700 hover:text-orange-600 hover:bg-orange-50 px-3 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-sign-out-alt mr-2"></i>ออกจากระบบ
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="block text-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
+                        เข้าสู่ระบบ
+                    </a>
+                @endauth
             </div>
         </div>
     </nav>
@@ -89,24 +132,18 @@
                         </li>
                         <li>
                             <a href="{{ route('cultural.explore') }}" class="text-gray-300 hover:text-orange-400 transition-colors duration-300 flex items-center text-sm">
-                                <i class="fas fa-search text-gray-400 mr-2 w-4"></i>
+                                <i class="fas fa-compass text-gray-400 mr-2 w-4"></i>
                                 สำรวจวัฒนธรรม
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="text-gray-300 hover:text-orange-400 transition-colors duration-300 flex items-center text-sm">
-                                <i class="fas fa-newspaper text-gray-400 mr-2 w-4"></i>
-                                บทความ
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-gray-300 hover:text-orange-400 transition-colors duration-300 flex items-center text-sm">
+                            <a href="{{ route('about') }}" class="text-gray-300 hover:text-orange-400 transition-colors duration-300 flex items-center text-sm">
                                 <i class="fas fa-graduation-cap text-gray-400 mr-2 w-4"></i>
-                                เกี่ยวกับ
+                                เกี่ยวกับเรา
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="text-gray-300 hover:text-orange-400 transition-colors duration-300 flex items-center text-sm">
+                            <a href="{{ route('contact') }}" class="text-gray-300 hover:text-orange-400 transition-colors duration-300 flex items-center text-sm">
                                 <i class="fas fa-phone text-gray-400 mr-2 w-4"></i>
                                 ติดต่อเรา
                             </a>
@@ -165,5 +202,32 @@
             </div>
         </div>
     </footer>
+
+    {{-- Scripts Stack --}}
+    @stack('scripts')
+    
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle icon
+                    const icon = this.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    } else {
+                        icon.classList.remove('fa-bars');
+                        icon.classList.add('fa-times');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -111,10 +111,18 @@ class FrontendController extends Controller
             'total_ip' => rand(10, 20), // ข้อมูลตัวอย่างสำหรับทรัพย์สินทางปัญญา
         ];
 
+        // ดึงข้อมูลวัฒนธรรมที่มีพิกัดสำหรับแผนที่
+        $culturalItemsWithLocation = CulturalItem::with(['category', 'community'])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->published()
+            ->get();
+
         return view('frontend.home', compact(
             'featuredItems', 
             'latestItems', 
-            'stats'
+            'stats',
+            'culturalItemsWithLocation'
         ));
     }
 

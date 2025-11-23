@@ -121,6 +121,34 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a href="{{ route('admin.activities.index') }}" 
+                           class="nav-link {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-images"></i>
+                            <p>
+                                จัดการกิจกรรม
+                                @php
+                                $activityCount = \App\Models\Activity::count();
+                                @endphp
+                                <span class="badge badge-success right">{{ $activityCount }}</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('admin.activity-categories.index') }}" 
+                           class="nav-link {{ request()->routeIs('admin.activity-categories.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-tags"></i>
+                            <p>
+                                หมวดหมู่กิจกรรม
+                                @php
+                                $categoryCount = \App\Models\ActivityCategory::count();
+                                @endphp
+                                <span class="badge badge-info right">{{ $categoryCount }}</span>
+                            </p>
+                        </a>
+                    </li>
+
                     {{-- ข้อมูลงานวิจัย --}}
                     <li class="nav-item">
                         <a href="#" 

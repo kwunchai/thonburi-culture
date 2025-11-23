@@ -358,6 +358,146 @@
     </div>
 </section>
 
+<!-- Cultural Heritage Map Section -->
+@if($culturalItemsWithLocation->count() > 0)
+<section class="py-12 bg-gradient-to-br from-orange-50 to-orange-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">แผนที่มรดกทางวัฒนธรรม</h2>
+            <div class="w-24 h-1 bg-orange-500 mx-auto mb-4"></div>
+            <p class="text-gray-600 max-w-3xl mx-auto">
+                สำรวจตำแหน่งที่ตั้งของมรดกทางวัฒนธรรมต่างๆ ทั่วประเทศไทย นำเมาส์ไปชี้ที่หมุดเพื่อดูรายละเอียด
+            </p>
+            <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-orange-500 rounded-full mr-2"></div>
+                    <span>มรดกทางวัฒนธรรม</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-lg mr-2">📍</span>
+                    <span>{{ $culturalItemsWithLocation->count() }} แห่ง</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-6">
+                <div class="relative">
+                    <!-- Map -->
+                    <div id="culturalMap" class="w-full h-96 md:h-[500px] lg:h-[600px] rounded-2xl shadow-lg bg-gray-100 flex items-center justify-center">
+                        <div class="text-center text-gray-500">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                            <p class="font-medium">กำลังโหลดแผนที่...</p>
+                            <p class="text-sm mt-1">โปรดรอสักครู่</p>
+                        </div>
+                    </div>
+
+                    <!-- Map Controls -->
+                    <div class="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 space-y-2 z-10">
+                        <button onclick="toggleMapType()" 
+                                class="w-full flex items-center justify-center px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-300 text-sm">
+                            <i class="fas fa-map mr-2"></i>
+                            <span id="mapTypeText">ดาวเทียม</span>
+                        </button>
+                        <button onclick="fitMapToMarkers()" 
+                                class="w-full flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-300 text-sm">
+                            <i class="fas fa-expand-arrows-alt mr-2"></i>
+                            ดูทั้งหมด
+                        </button>
+                    </div>
+
+                    <!-- Map Info Panel -->
+                    <div class="absolute bottom-4 left-4 bg-white bg-opacity-95 backdrop-blur-sm rounded-lg shadow-lg p-4 max-w-sm z-10">
+                        <h4 class="font-bold text-gray-800 mb-2 flex items-center">
+                            <i class="fas fa-info-circle text-orange-500 mr-2"></i>
+                            วิธีการใช้งาน
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li class="flex items-start">
+                                <span class="text-orange-500 mr-2">•</span>
+                                <span>คลิกหมุดเพื่อดูรายละเอียด</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-orange-500 mr-2">•</span>
+                                <span>ลากเพื่อเลื่อนแผนที่</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-orange-500 mr-2">•</span>
+                                <span>ใช้ล้อเมาส์เพื่อซูม</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Statistics -->
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-white text-center">
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->count() }}</div>
+                        <div class="text-sm opacity-90">ทั้งหมด</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->pluck('category_id')->unique()->count() }}</div>
+                        <div class="text-sm opacity-90">หมวดหมู่</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->pluck('community_id')->filter()->unique()->count() }}</div>
+                        <div class="text-sm opacity-90">ชุมชน</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->where('created_at', '>=', now()->subYear())->count() }}</div>
+                        <div class="text-sm opacity-90">ปีนี้</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend and Categories -->
+        <div class="mt-8">
+            <!-- Show All Button -->
+            <div class="flex justify-center mb-4">
+                <button onclick="showAllMarkers()" 
+                        class="flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors duration-300 shadow-lg hover:shadow-xl">
+                    <i class="fas fa-eye mr-2"></i>
+                    แสดงทั้งหมดบนแผนที่
+                </button>
+            </div>
+            
+            <!-- Category Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                @php
+                    $categories = $culturalItemsWithLocation->groupBy('category_id')->map(function($items) {
+                        return [
+                            'category' => $items->first()->category,
+                            'count' => $items->count(),
+                            'items' => $items
+                        ];
+                    });
+                @endphp
+                
+                @foreach($categories as $categoryData)
+                    @if($categoryData['category'])
+                    <div class="bg-white rounded-xl p-4 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-gray-800 text-sm">{{ $categoryData['category']->name }}</h4>
+                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-bold">{{ $categoryData['count'] }}</span>
+                        </div>
+                        <button onclick="filterMapByCategory({{ $categoryData['category']->id }})" 
+                                class="w-full text-left text-xs text-gray-600 hover:text-orange-600 transition-colors duration-300 flex items-center">
+                            <i class="fas fa-map-pin text-orange-500 mr-1"></i>
+                            กรองตามหมวดหมู่
+                        </button>
+                    </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- CSS Animations and Chart Styling -->
 <style>
     /* Modern Card Styles */
@@ -367,6 +507,47 @@
     
     .shadow-2xl {
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Google Maps Styling */
+    .gm-style-iw {
+        padding: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+    
+    .gm-style-iw-d {
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+    
+    .gm-ui-hover-effect {
+        opacity: 0.6 !important;
+    }
+    
+    /* Line clamp utility for text truncation */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Map container styling */
+    #culturalMap {
+        border-radius: 16px;
+    }
+    
+    .map-loading {
+        backdrop-filter: blur(5px);
+        background: rgba(255, 255, 255, 0.9);
     }
     
     /* Glassmorphism effect for cards */
@@ -1004,5 +1185,275 @@ document.addEventListener('DOMContentLoaded', function() {
     observer.observe(document.querySelector('#cultural-count').closest('.grid'));
 });
 </script>
+
+<!-- Google Maps Scripts for Cultural Heritage Map -->
+@if($culturalItemsWithLocation->count() > 0)
+@php
+    $mapData = $culturalItemsWithLocation->map(function($item) {
+        return [
+            'id' => $item->id,
+            'title' => $item->title,
+            'description' => Str::limit(strip_tags($item->description), 100),
+            'image' => $item->image ? Storage::url($item->image) : null,
+            'latitude' => (float) $item->latitude,
+            'longitude' => (float) $item->longitude,
+            'category' => $item->category ? $item->category->name : 'ไม่ระบุ',
+            'category_id' => $item->category_id,
+            'community' => $item->community ? $item->community->name : null,
+            'url' => route('cultural-item.show', $item->id),
+            'created_at' => $item->created_at->format('d/m/Y')
+        ];
+    });
+@endphp
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.google.api_key') }}&libraries=places" async defer></script>
+<script>
+let culturalMap;
+let mapMarkers = [];
+let infoWindow;
+let currentMapType = 'roadmap';
+
+// Cultural items data from Laravel
+const culturalItems = @json($mapData);
+
+// Initialize Google Map
+function initializeCulturalMap() {
+    if (culturalItems.length === 0) return;
+
+    // Calculate map bounds
+    const bounds = new google.maps.LatLngBounds();
+    culturalItems.forEach(item => {
+        bounds.extend(new google.maps.LatLng(item.latitude, item.longitude));
+    });
+
+    // Map options
+    const mapOptions = {
+        zoom: 6,
+        center: bounds.getCenter(),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        styles: [
+            {
+                featureType: 'poi',
+                elementType: 'labels',
+                stylers: [{ visibility: 'off' }]
+            }
+        ],
+        mapTypeControl: false,
+        streetViewControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+        gestureHandling: 'cooperative'
+    };
+
+    // Create map
+    culturalMap = new google.maps.Map(document.getElementById('culturalMap'), mapOptions);
+    
+    // Create info window
+    infoWindow = new google.maps.InfoWindow({
+        maxWidth: 350
+    });
+
+    // Create markers
+    culturalItems.forEach(item => {
+        createMarker(item);
+    });
+
+    // Fit map to show all markers
+    culturalMap.fitBounds(bounds);
+    
+    // Ensure minimum zoom level
+    google.maps.event.addListenerOnce(culturalMap, 'bounds_changed', function() {
+        if (culturalMap.getZoom() > 15) {
+            culturalMap.setZoom(15);
+        }
+    });
+
+    // Remove loading indicator
+    document.getElementById('culturalMap').innerHTML = '';
+}
+
+// Create marker for cultural item
+function createMarker(item) {
+    const marker = new google.maps.Marker({
+        position: { lat: item.latitude, lng: item.longitude },
+        map: culturalMap,
+        title: item.title,
+        icon: {
+            url: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png',
+            scaledSize: new google.maps.Size(32, 32)
+        },
+        animation: google.maps.Animation.DROP
+    });
+
+    // Create info window content
+    const infoContent = `
+        <div class="max-w-sm">
+            <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+                ${item.image ? `
+                    <div class="h-32 overflow-hidden">
+                        <img src="${item.image}" 
+                             alt="${item.title}" 
+                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                             onerror="this.style.display='none'">
+                    </div>
+                ` : ''}
+                <div class="p-4">
+                    <h3 class="font-bold text-gray-900 text-lg mb-2 line-clamp-2">${item.title}</h3>
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-3">${item.description}</p>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-xs text-gray-500">
+                            <i class="fas fa-tag mr-1 text-orange-500"></i>
+                            <span>${item.category}</span>
+                        </div>
+                        ${item.community ? `
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="fas fa-users mr-1 text-blue-500"></i>
+                                <span>${item.community}</span>
+                            </div>
+                        ` : ''}
+                        <div class="flex items-center text-xs text-gray-500">
+                            <i class="fas fa-calendar mr-1 text-purple-500"></i>
+                            <span>${item.created_at}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <a href="${item.url}" 
+                           class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300">
+                            <i class="fas fa-eye mr-1"></i>
+                            ดูรายละเอียด
+                        </a>
+                        <button onclick="openDirectionsTo(${item.latitude}, ${item.longitude})" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300">
+                            <i class="fas fa-directions"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add click event to marker
+    marker.addListener('click', function() {
+        infoWindow.setContent(infoContent);
+        infoWindow.open(culturalMap, marker);
+        
+        // Center map on marker
+        culturalMap.panTo(marker.getPosition());
+    });
+
+    // Store marker with item data
+    marker.itemData = item;
+    mapMarkers.push(marker);
+}
+
+// Toggle map type
+function toggleMapType() {
+    if (currentMapType === 'roadmap') {
+        culturalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+        currentMapType = 'satellite';
+        document.getElementById('mapTypeText').textContent = 'แผนที่';
+    } else {
+        culturalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+        currentMapType = 'roadmap';
+        document.getElementById('mapTypeText').textContent = 'ดาวเทียม';
+    }
+}
+
+// Fit map to show all markers
+function fitMapToMarkers() {
+    const bounds = new google.maps.LatLngBounds();
+    mapMarkers.forEach(marker => {
+        bounds.extend(marker.getPosition());
+    });
+    culturalMap.fitBounds(bounds);
+    
+    // Ensure minimum zoom level
+    google.maps.event.addListenerOnce(culturalMap, 'bounds_changed', function() {
+        if (culturalMap.getZoom() > 15) {
+            culturalMap.setZoom(15);
+        }
+    });
+}
+
+// Filter map by category
+function filterMapByCategory(categoryId) {
+    // Hide all markers first
+    mapMarkers.forEach(marker => {
+        marker.setVisible(false);
+    });
+    
+    // Show only markers of selected category
+    const filteredMarkers = mapMarkers.filter(marker => {
+        return marker.itemData.category_id === categoryId;
+    });
+    
+    filteredMarkers.forEach(marker => {
+        marker.setVisible(true);
+    });
+    
+    // Fit map to filtered markers
+    if (filteredMarkers.length > 0) {
+        const bounds = new google.maps.LatLngBounds();
+        filteredMarkers.forEach(marker => {
+            bounds.extend(marker.getPosition());
+        });
+        culturalMap.fitBounds(bounds);
+        
+        // Ensure minimum zoom level
+        google.maps.event.addListenerOnce(culturalMap, 'bounds_changed', function() {
+            if (culturalMap.getZoom() > 15) {
+                culturalMap.setZoom(15);
+            }
+        });
+    }
+    
+    // Show notification
+    showMapNotification(`แสดงเฉพาะหมวดหมู่ที่เลือก (${filteredMarkers.length} รายการ)`);
+}
+
+// Show all markers
+function showAllMarkers() {
+    mapMarkers.forEach(marker => {
+        marker.setVisible(true);
+    });
+    fitMapToMarkers();
+    showMapNotification('แสดงทั้งหมด');
+}
+
+// Open directions to location
+function openDirectionsTo(lat, lng) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
+}
+
+// Show map notification
+function showMapNotification(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 2000);
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for Google Maps API to load
+    setTimeout(initializeCulturalMap, 1000);
+});
+
+// Initialize map when Google Maps API is ready
+window.initializeCulturalMap = initializeCulturalMap;
+</script>
+@endif
 
 @endsection

@@ -1,14 +1,18 @@
 <?php
 
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CulturalItemController;
 use App\Http\Controllers\Admin\SlideshowController;
 use App\Http\Controllers\Admin\CommunityController;
+use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
+use App\Http\Controllers\Admin\ActivityCategoryController;
+use App\Http\Controllers\Admin\IntellectualPropertyController;
 use App\Http\Controllers\HomeStatsController;
 use App\Http\Controllers\IpController;
-use App\Http\Controllers\Admin\IntellectualPropertyController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 
 /*
@@ -35,6 +39,9 @@ Route::post('/contact', [FrontendController::class, 'sendContact'])->name('conta
 Route::get('/map', [FrontendController::class, 'map'])->name('map');
 Route::get('/news', [FrontendController::class, 'news'])->name('news');
 Route::get('/gallery', [FrontendController::class, 'gallery'])->name('gallery');
+Route::get('/activities', [ActivityController::class, 'index'])->name('activities');
+Route::get('/activity/{activity}', [ActivityController::class, 'show'])->name('activity.show');
+Route::get('/activities/category/{category}', [ActivityController::class, 'byCategory'])->name('activities.category');
 Route::get('/sitemap.xml', [FrontendController::class, 'sitemap'])->name('sitemap');
 Route::get('/ip', [IpController::class,'index'])->name('ip.public.index');
 Route::get('/ip/{ip:slug}', [IpController::class,'show'])->name('ip.public.show');
@@ -43,6 +50,49 @@ Route::get('/ip/{ip:slug}', [IpController::class,'show'])->name('ip.public.show'
 Route::get('/stats/home', [HomeStatsController::class, 'index'])
   ->name('stats.home')
   ->middleware('throttle:30,1');
+
+// Test routes for authentication debugging
+Route::get('/test-auth', function() {
+    return view('test-auth');
+})->name('test.auth');
+
+Route::post('/test-login', function() {
+    $credentials = request()->only('email', 'password');
+    
+    if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'user' => [
+                'email' => $user->email,
+                'name' => $user->name,
+                'role' => $user->role
+            ]
+        ]);
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'Invalid credentials'
+    ]);
+})->name('test.login');
+
+// Quick debug route
+Route::get('/debug-user', function() {
+    $user = \App\Models\User::where('email', 'admin@test.com')->first();
+    return [
+        'user_exists' => $user ? true : false,
+        'user_data' => $user ? [
+            'email' => $user->email,
+            'name' => $user->name,
+            'role' => $user->role,
+            'password_hash' => substr($user->password, 0, 20) . '...'
+        ] : null,
+        'auth_status' => Auth::check(),
+        'session_config' => config('session.driver')
+    ];
+});
 
 
 /*
@@ -81,6 +131,14 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('ip/export', [IntellectualPropertyController::class, 'export'])->name('ip.export');
         Route::resource('ip', IntellectualPropertyController::class);
     });
+
+    // Activities Management
+    Route::resource('activities', AdminActivityController::class);
+    Route::post('activities/{activity}/toggle-status', [AdminActivityController::class, 'toggleStatus'])->name('activities.toggle-status');
+    
+    // Activity Categories Management  
+    Route::resource('activity-categories', ActivityCategoryController::class);
+    Route::post('activity-categories/{activityCategory}/toggle-status', [ActivityCategoryController::class, 'toggleStatus'])->name('activity-categories.toggle-status');
     
     // User Management (using resource)
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
