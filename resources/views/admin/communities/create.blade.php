@@ -270,7 +270,7 @@
                         @enderror
                     </div>
                     
-                    <button type="button" class="btn btn-info btn-sm" onclick="getCurrentLocation()">
+                    <button type="button" class="btn btn-info btn-sm" onclick="getCurrentLocation(this)">
                         <i class="fas fa-map-marker-alt"></i> ใช้ตำแหน่งปัจจุบัน
                     </button>
                     
@@ -317,7 +317,7 @@
 
 @push('scripts')
 <!-- Include Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&callback=initMap" async defer></script>
 
 <script>
 // Image preview
@@ -361,32 +361,42 @@ document.getElementById('galleryImages').addEventListener('change', function(e) 
 // Map
 let map;
 let marker;
+let mapLoaded = false;
 
 function initMap() {
+    console.log('initMap called');
     // Default center (Bangkok)
     const defaultLocation = { lat: 13.7563, lng: 100.5018 };
     
-    map = new google.maps.Map(document.getElementById('map'), {
-        center: defaultLocation,
-        zoom: 12
-    });
-    
-    // Click on map to set location
-    map.addListener('click', function(event) {
-        setMarker(event.latLng);
-    });
-    
-    // Existing communities markers
-    @if(isset($existingCommunities))
-        @foreach($existingCommunities as $community)
-            new google.maps.Marker({
-                position: { lat: {{ $community->latitude }}, lng: {{ $community->longitude }} },
-                map: map,
-                title: '{{ $community->name }}',
-                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-            });
-        @endforeach
-    @endif
+    try {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: defaultLocation,
+            zoom: 12
+        });
+        
+        mapLoaded = true;
+        console.log('Map initialized successfully');
+        
+        // Click on map to set location
+        map.addListener('click', function(event) {
+            setMarker(event.latLng);
+        });
+        
+        // Existing communities markers
+        @if(isset($existingCommunities))
+            @foreach($existingCommunities as $community)
+                new google.maps.Marker({
+                    position: { lat: {{ $community->latitude }}, lng: {{ $community->longitude }} },
+                    map: map,
+                    title: '{{ $community->name }}',
+                    icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+                });
+            @endforeach
+        @endif
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        mapLoaded = false;
+    }
 }
 
 function setMarker(location) {
@@ -410,19 +420,105 @@ function setMarker(location) {
     });
 }
 
-function getCurrentLocation() {
+function getCurrentLocation(button) {
+    console.log('getCurrentLocation called');
+    
+    if (!button) {
+        console.error('Button element not found');
+        return;
+    }
+    
+    const originalHTML = button.innerHTML;
+    
+    // แสดง loading
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังค้นหาตำแหน่ง...';
+    
+    console.log('Checking geolocation support...');
+    
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-            };
-            
-            map.setCenter(pos);
-            setMarker(new google.maps.LatLng(pos.lat, pos.lng));
-        });
+        console.log('Geolocation is supported');
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                console.log('Position received:', position);
+                
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                
+                console.log('Coordinates:', pos);
+                
+                // อัปเดตค่า input
+                document.getElementById('latitude').value = pos.lat;
+                document.getElementById('longitude').value = pos.lng;
+                
+                console.log('Input fields updated');
+                
+                // อัปเดตแผนที่
+                if (mapLoaded && map && typeof google !== 'undefined') {
+                    try {
+                        map.setCenter(pos);
+                        map.setZoom(15);
+                        setMarker(new google.maps.LatLng(pos.lat, pos.lng));
+                        console.log('Map updated');
+                    } catch (mapError) {
+                        console.error('Error updating map:', mapError);
+                    }
+                } else {
+                    console.warn('Map not loaded or Google Maps API not available');
+                    console.log('mapLoaded:', mapLoaded);
+                    console.log('map:', map);
+                    console.log('google:', typeof google);
+                }
+                
+                // แสดงข้อความสำเร็จ
+                button.innerHTML = '<i class="fas fa-check"></i> ใช้ตำแหน่งปัจจุบันสำเร็จ';
+                button.classList.remove('btn-info');
+                button.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-info');
+                    button.disabled = false;
+                }, 2000);
+            },
+            function(error) {
+                console.error('Geolocation error:', error);
+                
+                let errorMessage = 'ไม่สามารถรับตำแหน่งได้';
+                
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'กรุณาอนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์';
+                        console.error('Permission denied');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'ไม่สามารถระบุตำแหน่งได้';
+                        console.error('Position unavailable');
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'หมดเวลาในการรับตำแหน่ง';
+                        console.error('Timeout');
+                        break;
+                }
+                
+                alert(errorMessage);
+                
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
     } else {
-        alert('Browser ของคุณไม่รองรับ Geolocation');
+        alert('เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง (Geolocation)');
+        button.innerHTML = originalHTML;
+        button.disabled = false;
     }
 }
 

@@ -230,77 +230,59 @@
         <!-- Items Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             @forelse($items as $item)
-                <article class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-orange-200">
-                    <!-- Image Container -->
-                    <div class="relative overflow-hidden h-48">
+                <article class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                    <!-- Image Container with Category Badge -->
+                    <div class="relative overflow-hidden h-56">
                         @if($item->image)
                             <img src="{{ asset('storage/' . $item->image) }}" 
                                  alt="{{ $item->title }}" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                         @else
                             <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                <div class="text-center">
-                                    <i class="fas fa-image text-4xl text-orange-400 mb-2"></i>
-                                    <p class="text-xs text-orange-400">🖼️ ขาดรูปภาพ</p>
-                                </div>
+                                <i class="fas fa-image text-5xl text-gray-400"></i>
+                            </div>
+                        @endif
+                        
+                        <!-- Category Badge on Image -->
+                        @if($item->category)
+                            <div class="absolute top-4 left-4">
+                                <span class="inline-block px-4 py-1.5 bg-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
+                                    {{ $item->category->name }}
+                                </span>
                             </div>
                         @endif
                         
                         <!-- Overlay on hover -->
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
                     </div>
                     
                     <!-- Content Container -->
-                    <div class="p-5 flex flex-col h-44">
+                    <div class="p-6">
                         <!-- Title -->
-                        <h3 class="font-bold text-base mb-2 text-gray-800 group-hover:text-orange-600 transition-colors duration-300 line-clamp-2 leading-tight">
+                        <h3 class="font-bold text-lg mb-3 text-gray-900 group-hover:text-orange-600 transition-colors duration-300 line-clamp-2 leading-snug min-h-[56px]">
                             {{ $item->title }}
                         </h3>
                         
                         <!-- Description -->
-                        <p class="text-gray-600 text-sm mb-3 line-clamp-2 leading-relaxed flex-grow">
-                            {{ Str::limit($item->description, 80) }}
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed min-h-[63px]">
+                            {{ Str::limit(strip_tags($item->description), 120) }}
                         </p>
                         
-                        <!-- Meta Info Footer -->
-                        <div class="mt-auto">
-                            <!-- Meta Info Row -->
-                            <div class="flex items-center justify-between text-xs text-gray-500 mb-3 pb-2 border-b border-gray-100">
-                                <!-- Community -->
-                                @if($item->community)
-                                    <div class="flex items-center flex-1 min-w-0">
-                                        <i class="fas fa-map-marker-alt text-orange-500 mr-1 flex-shrink-0"></i>
-                                        <span class="truncate">{{ $item->community->name }}</span>
-                                    </div>
-                                @else
-                                    <div class="flex-1"></div>
-                                @endif
-                                
-                                <!-- Category -->
-                                @if($item->category)
-                                    <div class="flex items-center ml-2">
-                                        <span class="px-2 py-1 bg-orange-100 text-orange-600 text-xs rounded-full font-medium whitespace-nowrap">
-                                            {{ $item->category->name }}
-                                        </span>
-                                    </div>
-                                @endif
+                        <!-- Footer -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <!-- Community -->
+                            <div class="flex items-center text-gray-500 text-xs">
+                                <i class="fas fa-map-marker-alt text-orange-500 mr-1.5"></i>
+                                <span class="truncate max-w-[150px]">{{ $item->community->name ?? 'ไม่ระบุ' }}</span>
                             </div>
                             
-                            <!-- Action Button -->
-                            <div class="flex justify-between items-center">
-                                <a href="{{ route('cultural-item.show', $item->id) }}" 
-                                   aria-label="อ่านเพิ่มเติม: {{ $item->title }}"
-                                   class="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium text-sm group/btn transition-colors duration-200">
-                                    <span class="mr-2">อ่านเพิ่ม</span>
-                                    <i class="fas fa-arrow-right group-hover/btn:translate-x-1 transition-transform duration-200"></i>
-                                </a>
-                                
-                                <!-- Date -->
-                                <div class="text-xs text-gray-400">
-                                    <i class="fas fa-calendar-alt mr-1"></i>
-                                    {{ $item->created_at->format('d/m/Y') }}
-                                </div>
-                            </div>
+                            <!-- Read More Link -->
+                            <a href="{{ route('cultural-item.show', $item->id) }}" 
+                               aria-label="อ่านเพิ่มเติม: {{ $item->title }}"
+                               class="inline-flex items-center text-orange-500 hover:text-orange-600 font-semibold text-sm group/btn transition-all duration-200">
+                                <span>อ่านเพิ่ม</span>
+                                <i class="fas fa-arrow-right ml-2 group-hover/btn:translate-x-1 transition-transform duration-200"></i>
+                            </a>
                         </div>
                     </div>
                 </article>

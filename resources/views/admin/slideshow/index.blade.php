@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'จัดการ Hero Slideshow')
-@section('header', 'จัดการ Hero Slideshow')
+@section('title', 'จัดการ Slideshow')
+@section('header', 'จัดการ Slideshow')
 
 @section('content')
 <!-- Featured Items Section -->
@@ -41,16 +41,6 @@
                         <i class="fas fa-image fa-3x text-white-50"></i>
                     </div>
                 @endif
-                
-                <!-- Order Badge -->
-                <span class="position-absolute top-0 left-0 m-2 badge badge-warning" style="font-size: 1rem;">
-                    #{{ $item->featured_order ?? $loop->iteration }}
-                </span>
-                
-                <!-- Featured Badge -->
-                <span class="position-absolute top-0 right-0 m-2 badge badge-success">
-                    <i class="fas fa-star"></i> Featured
-                </span>
             </div>
             
             <div class="card-body p-3">
@@ -77,16 +67,6 @@
                             data-action="remove">
                         <i class="fas fa-star-half-alt"></i> ยกเลิก Slideshow
                     </button>
-                    <form action="{{ route('admin.slideshow.destroy', $item->id) }}" 
-                          method="POST" 
-                          class="d-inline"
-                          onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลวัฒนธรรมนี้ออกจากระบบทั้งหมด? (ไม่สามารถกู้คืนได้)')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash"></i> ลบข้อมูลทั้งหมด
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>

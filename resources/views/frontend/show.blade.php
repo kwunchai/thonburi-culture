@@ -135,50 +135,6 @@
                             </div>
                         @endif
 
-                        {{-- Location Information --}}
-                        @if($item->latitude && $item->longitude)
-                            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg mb-6">
-                                <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center">
-                                    <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>
-                                    ที่ตั้งและการเดินทาง
-                                </h3>
-                                
-                                <div class="grid md:grid-cols-2 gap-4">
-                                    {{-- Coordinates --}}
-                                    <div class="space-y-3">
-                                        <div class="bg-white p-3 rounded-lg shadow-sm">
-                                            <h4 class="font-semibold text-gray-900 mb-2 text-sm">พิกัดที่ตั้ง</h4>
-                                            <div class="space-y-1 text-sm text-gray-600">
-                                                <div class="flex justify-between">
-                                                    <span>ละติจูด:</span>
-                                                    <span class="font-mono font-semibold">{{ $item->latitude }}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span>ลองจิจูด:</span>
-                                                    <span class="font-mono font-semibold">{{ $item->longitude }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <button onclick="openMap({{ $item->latitude }}, {{ $item->longitude }})" 
-                                                class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center text-sm">
-                                            <i class="fas fa-route mr-2"></i>
-                                            เส้นทางการเดินทาง
-                                        </button>
-                                    </div>
-                                    
-                                    {{-- Map Placeholder --}}
-                                    <div class="bg-gray-100 rounded-lg h-32 md:h-40 flex items-center justify-center" id="mapContainer">
-                                        <div class="text-center text-gray-500">
-                                            <i class="fas fa-map text-2xl mb-1"></i>
-                                            <p class="font-medium text-sm">แผนที่</p>
-                                            <p class="text-xs">กำลังโหลด...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
                         {{-- Additional Info Section --}}
                         <div class="grid md:grid-cols-2 gap-4 mb-6">
                             {{-- Details Card --}}
@@ -378,7 +334,7 @@
 
 {{-- Google Maps API --}}
 @if($item->latitude && $item->longitude)
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.google.api_key') }}&libraries=places" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&libraries=places" async defer></script>
 @endif
 
 {{-- JavaScript Functions --}}
@@ -508,37 +464,6 @@ function openDirections(lat, lng) {
 // Initialize Google Maps if available
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof google !== 'undefined' && google.maps) {
-        // Initialize legacy map container (location information section)
-        const mapContainer = document.getElementById('mapContainer');
-        if (mapContainer) {
-            // Clear placeholder
-            mapContainer.innerHTML = '';
-            
-            // Create map
-            const map = new google.maps.Map(mapContainer, {
-                center: { lat: {{ $item->latitude }}, lng: {{ $item->longitude }} },
-                zoom: 15,
-                styles: [
-                    {
-                        featureType: 'poi',
-                        elementType: 'labels',
-                        stylers: [{ visibility: 'off' }]
-                    }
-                ]
-            });
-            
-            // Add marker
-            new google.maps.Marker({
-                position: { lat: {{ $item->latitude }}, lng: {{ $item->longitude }} },
-                map: map,
-                title: '{{ $item->title }}',
-                icon: {
-                    url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-                    scaledSize: new google.maps.Size(32, 32)
-                }
-            });
-        }
-        
         // Initialize main item map (Map Card)
         const itemMapElement = document.getElementById('itemMap');
         if (itemMapElement) {
@@ -597,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         // If Google Maps API is not loaded, try to load it
         const script = document.createElement('script');
-        script.src = 'https://maps.googleapis.com/maps/api/js?key={{ config("maps.google.api_key") }}';
+        script.src = 'https://maps.googleapis.com/maps/api/js?key={{ config("maps.api_key") }}';
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);

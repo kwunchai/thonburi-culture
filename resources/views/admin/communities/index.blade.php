@@ -133,7 +133,6 @@
                             <input type="checkbox" id="select-all">
                         </th>
                         <th style="width: 60px">ID</th>
-                        <th style="width: 100px">รูปภาพ</th>
                         <th>ชื่อชุมชน</th>
                         <th>คำอธิบาย</th>
                         <th style="width: 100px" class="text-center">ข้อมูลวัฒนธรรม</th>
@@ -149,19 +148,6 @@
                             <input type="checkbox" class="community-checkbox" value="{{ $community->id }}">
                         </td>
                         <td>{{ $community->id }}</td>
-                        <td>
-                            @if($community->image)
-                                <img src="{{ Storage::url($community->image) }}" 
-                                     alt="{{ $community->name }}"
-                                     class="img-thumbnail"
-                                     style="width: 80px; height: 60px; object-fit: cover;">
-                            @else
-                                <div class="bg-light d-flex align-items-center justify-content-center"
-                                     style="width: 80px; height: 60px;">
-                                    <i class="fas fa-image text-muted"></i>
-                                </div>
-                            @endif
-                        </td>
                         <td>
                             <strong>{{ $community->name }}</strong>
                             @if($community->established_year)

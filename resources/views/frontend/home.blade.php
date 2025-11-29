@@ -10,24 +10,6 @@
 @endpush
 
 @section('content')
-<!-- Debug Info (แสดงเฉพาะใน development) -->
-@if(config('app.debug'))
-@php
-    // Filter เฉพาะ items ที่ is_featured = 1 จริงๆ สำหรับ debug
-    $debugActualFeatured = $featuredItems->filter(function($item) {
-        return $item->is_featured == 1;
-    });
-@endphp
-<div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-family: monospace; font-size: 12px;">
-    <div>Total Featured Items: {{ $featuredItems->count() }}</div>
-    <div>Actual Featured Items: {{ $debugActualFeatured->count() }}</div>
-    <div>Timestamp: {{ now()->format('Y-m-d H:i:s') }}</div>
-    <div>Cache Bust: {{ time() }}</div>
-    @foreach($featuredItems as $i => $item)
-    <div>{{ $i+1 }}. ID: {{ $item->id ?? 'N/A' }} - Featured: {{ isset($item->is_featured) ? ($item->is_featured ? 'Yes' : 'No') : 'N/A' }}</div>
-    @endforeach
-</div>
-@endif
 
 <!-- Hero Slideshow Section -->
 <section class="relative h-[600px] md:h-[700px] overflow-hidden bg-gray-900">
@@ -1205,7 +1187,6 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     });
 @endphp
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.google.api_key') }}&libraries=places" async defer></script>
 <script>
 let culturalMap;
 let mapMarkers = [];
@@ -1217,7 +1198,32 @@ const culturalItems = @json($mapData);
 
 // Initialize Google Map
 function initializeCulturalMap() {
-    if (culturalItems.length === 0) return;
+    console.log('Initializing cultural map...');
+    console.log('Cultural items:', culturalItems.length);
+    
+    if (culturalItems.length === 0) {
+        console.log('No cultural items with location');
+        const mapContainer = document.getElementById('culturalMap');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="text-center text-gray-500 py-12"><i class="fas fa-map-marked-alt text-6xl mb-4 text-gray-300"></i><p>ไม่มีข้อมูลตำแหน่งสำหรับแสดงบนแผนที่</p></div>';
+        }
+        return;
+    }
+    
+    if (typeof google === 'undefined' || !google.maps) {
+        console.error('Google Maps API not loaded');
+        const mapContainer = document.getElementById('culturalMap');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="text-center text-red-500 py-12"><i class="fas fa-exclamation-triangle text-6xl mb-4"></i><p>ไม่สามารถโหลด Google Maps ได้</p></div>';
+        }
+        return;
+    }
+    
+    // Remove loading indicator first
+    const mapContainer = document.getElementById('culturalMap');
+    if (mapContainer) {
+        mapContainer.innerHTML = '';
+    }
 
     // Calculate map bounds
     const bounds = new google.maps.LatLngBounds();
@@ -1266,9 +1272,8 @@ function initializeCulturalMap() {
             culturalMap.setZoom(15);
         }
     });
-
-    // Remove loading indicator
-    document.getElementById('culturalMap').innerHTML = '';
+    
+    console.log('Map initialized successfully with', mapMarkers.length, 'markers');
 }
 
 // Create marker for cultural item
@@ -1446,14 +1451,26 @@ function showMapNotification(message) {
 }
 
 // Initialize map when page loads
+function initMapWhenReady() {
+    if (typeof google !== 'undefined' && google.maps) {
+        console.log('Google Maps API loaded, initializing map...');
+        initializeCulturalMap();
+    } else {
+        console.log('Waiting for Google Maps API...');
+        setTimeout(initMapWhenReady, 500);
+    }
+}
+
+// Start checking when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit for Google Maps API to load
-    setTimeout(initializeCulturalMap, 1000);
+    console.log('DOM loaded, waiting for Google Maps API...');
+    initMapWhenReady();
 });
 
-// Initialize map when Google Maps API is ready
-window.initializeCulturalMap = initializeCulturalMap;
+// Backup: Initialize when Google Maps callback fires
+window.initMap = initializeCulturalMap;
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&libraries=places&callback=initMap" async defer></script>
 @endif
 
 @endsection

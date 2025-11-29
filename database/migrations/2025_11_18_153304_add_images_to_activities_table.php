@@ -12,9 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('activities', function (Blueprint $table) {
-            // เพิ่มคอลัมน์ images สำหรับเก็บรูปภาพหลายรูปเป็น JSON
-            $table->json('images')->nullable()->after('image');
-            // เก็บ image เก่าไว้สำหรับ backward compatibility
+            // ตรวจสอบว่ามีคอลัมน์ images อยู่แล้วหรือไม่
+            if (!Schema::hasColumn('activities', 'images')) {
+                // เพิ่มคอลัมน์ images สำหรับเก็บรูปภาพหลายรูปเป็น JSON
+                $table->json('images')->nullable()->after('image');
+                // เก็บ image เก่าไว้สำหรับ backward compatibility
+            }
         });
     }
 

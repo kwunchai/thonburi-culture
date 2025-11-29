@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ActivityCategoryController;
 use App\Http\Controllers\Admin\IntellectualPropertyController;
 use App\Http\Controllers\HomeStatsController;
 use App\Http\Controllers\IpController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,7 +45,7 @@ Route::get('/activity/{activity}', [ActivityController::class, 'show'])->name('a
 Route::get('/activities/category/{category}', [ActivityController::class, 'byCategory'])->name('activities.category');
 Route::get('/sitemap.xml', [FrontendController::class, 'sitemap'])->name('sitemap');
 Route::get('/ip', [IpController::class,'index'])->name('ip.public.index');
-Route::get('/ip/{ip:slug}', [IpController::class,'show'])->name('ip.public.show');
+Route::get('/ip/{ip}', [IpController::class,'show'])->name('ip.public.show');
 
 // Route for public stats (JSON)
 Route::get('/stats/home', [HomeStatsController::class, 'index'])
@@ -102,6 +103,14 @@ Route::get('/debug-user', function() {
 | Routes for the administrative backend.
 | These routes require the user to be authenticated.
 */
+
+// Profile Routes (require authentication)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard Routes
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

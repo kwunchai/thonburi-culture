@@ -24,12 +24,12 @@
                 เกี่ยวกับเรา
             </h1>
             <p class="text-lg md:text-xl text-white/80 font-light mb-6">
-                About Thonburi Culture
+                about us
             </p>
             
             <!-- Description -->
             <p class="text-xl md:text-2xl text-white/95 leading-relaxed mb-8 max-w-3xl mx-auto">
-                แพลตฟอร์มดิจิทัลที่รวบรวมและเผยแพร่เรื่องราวทางวัฒนธรรม<br class="hidden md:block">
+                รวบรวมและเผยแพร่เรื่องราวทางวัฒนธรรม<br class="hidden md:block">
                 ประเพณี และวิถีชีวิตของชุมชนในเขตธนบุรี
             </p>
             
