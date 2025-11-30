@@ -4,6 +4,7 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CulturalItemController;
+use App\Http\Controllers\Admin\CulturalCategoryController;
 use App\Http\Controllers\Admin\SlideshowController;
 use App\Http\Controllers\Admin\CommunityController;
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
@@ -111,7 +112,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard Routes
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -135,11 +136,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('communities/{community}/toggle-active', [CommunityController::class, 'toggleActive'])->name('communities.toggle-active');
     Route::post('communities/{community}/update-location', [CommunityController::class, 'updateLocation'])->name('communities.update-location');
 
-    // Intellectual Property Management (using resource)
-    Route::middleware('ip.permission')->group(function () {
-        Route::get('ip/export', [IntellectualPropertyController::class, 'export'])->name('ip.export');
-        Route::resource('ip', IntellectualPropertyController::class);
-    });
+    // Cultural Categories Management
+    Route::resource('cultural-categories', CulturalCategoryController::class);
 
     // Activities Management
     Route::resource('activities', AdminActivityController::class);
@@ -152,8 +150,12 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // User Management (using resource)
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::patch('users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
-    
-    // Additional IP routes (if any)
+});
+
+// Intellectual Property Management - separate middleware for IP managers
+Route::middleware(['auth', 'verified', 'ip.permission'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('ip/export', [IntellectualPropertyController::class, 'export'])->name('ip.export');
+    Route::resource('ip', IntellectualPropertyController::class);
 });
 
 // Test route for debugging IP show

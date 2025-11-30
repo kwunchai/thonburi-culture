@@ -24,8 +24,7 @@ class CheckIpPermission
                 return response()->json(['error' => 'ไม่มีสิทธิ์เข้าถึงข้อมูลทรัพย์สินทางปัญญา'], 403);
             }
 
-            return redirect()->route('admin.dashboard')
-                ->with('error', 'คุณไม่มีสิทธิ์เข้าถึงข้อมูลทรัพย์สินทางปัญญา');
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงข้อมูลทรัพย์สินทางปัญญา');
         }
 
         return $next($request);
