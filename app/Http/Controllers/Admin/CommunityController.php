@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class CommunityController extends Controller
 {
@@ -348,55 +349,87 @@ class CommunityController extends Controller
     /**
      * Export ข้อมูลชุมชนเป็น CSV
      */
-    public function export()
+    public function export(Request $request)
     {
-        $communities = Community::withCount('culturalItems')
-            ->orderBy('name')
-            ->get();
+        $format = $request->get('export', 'excel');
         
-        $csvData = [];
-        $csvData[] = ['ชื่อชุมชน', 'คำอธิบาย', 'ที่อยู่', 'ผู้ติดต่อ', 'โทรศัพท์', 'อีเมล', 'จำนวนข้อมูลวัฒนธรรม', 'ละติจูด', 'ลองจิจูด'];
+        $query = Community::withCount(['culturalItems' => function($q) {
+            $q->published();
+        }]);
         
-        foreach ($communities as $community) {
-            $csvData[] = [
-                $community->name,
-                $community->description,
-                $community->address,
-                $community->contact_name,
-                $community->contact_phone,
-                $community->contact_email,
-                $community->cultural_items_count,
-                $community->latitude,
-                $community->longitude
-            ];
+        // ใช้ filter เดียวกับ index
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
+            });
         }
         
-        $filename = 'communities_' . date('Y-m-d_His') . '.csv';
+        $communities = $query->orderBy('name')->get();
         
-        $handle = fopen('php://output', 'w');
-        fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM for UTF-8
-        
-        foreach ($csvData as $row) {
-            fputcsv($handle, $row);
-        }
-        
-        fclose($handle);
-        
-        return response()->stream(
-            function() use ($csvData) {
-                $handle = fopen('php://output', 'w');
-                fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
-                foreach ($csvData as $row) {
-                    fputcsv($handle, $row);
-                }
-                fclose($handle);
-            },
-            200,
-            [
+        return $this->exportToExcel($communities);
+    }
+    
+    private function exportToExcel($communities)
+    {
+        try {
+            $filename = 'communities-' . date('Y-m-d') . '.csv';
+            
+            $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            ]
-        );
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Expires' => '0',
+                'Pragma' => 'public',
+            ];
+
+            $callback = function() use ($communities) {
+                $file = fopen('php://output', 'w');
+                
+                // Add BOM for UTF-8
+                fwrite($file, "\xEF\xBB\xBF");
+                
+                // Headers
+                fputcsv($file, [
+                    'ID',
+                    'ชื่อชุมชน',
+                    'คำอธิบาย',
+                    'ที่อยู่',
+                    'ผู้ติดต่อ',
+                    'โทรศัพท์',
+                    'อีเมล',
+                    'จำนวนข้อมูลวัฒนธรรม',
+                    'ละติจูด',
+                    'ลองจิจูด',
+                    'วันที่สร้าง'
+                ]);
+                
+                foreach ($communities as $community) {
+                    fputcsv($file, [
+                        $community->id,
+                        $community->name,
+                        strip_tags($community->description),
+                        $community->address,
+                        $community->contact_name,
+                        $community->contact_phone,
+                        $community->contact_email,
+                        $community->cultural_items_count,
+                        $community->latitude,
+                        $community->longitude,
+                        $community->created_at->format('d/m/Y H:i:s')
+                    ]);
+                }
+                
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+            
+        } catch (\Exception $e) {
+            Log::error('Community export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการส่งออกข้อมูล: ' . $e->getMessage());
+        }
     }
 
     /**

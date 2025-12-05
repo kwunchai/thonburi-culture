@@ -1,0 +1,6 @@
+@echo off
+echo Testing Cultural Items Export...
+php artisan route:list --name=cultural-items.export
+echo.
+echo Route exists, testing URL generation...
+php artisan tinker --execute="echo route('admin.cultural-items.export', ['export' => 'excel']);"

@@ -13,21 +13,14 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // สร้าง Admin
-        $admin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@thonburi.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
+        // เรียก seeder อื่นๆ
+        $this->call([
+            CulturalItemSeeder::class,
+            IntellectualPropertySeeder::class,
         ]);
-
-        // สร้าง Editor
-        $editor = User::create([
-            'name' => 'Editor',
-            'email' => 'editor@thonburi.com',
-            'password' => Hash::make('password'),
-            'role' => 'editor',
-        ]);
+        
+        echo "🎉 เสร็จสิ้นการ seed ข้อมูลทั้งหมด!\n";
+    }
 
         // สร้างหมวดหมู่
         $categories = [

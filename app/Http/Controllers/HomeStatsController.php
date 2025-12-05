@@ -32,8 +32,13 @@ class HomeStatsController extends Controller
 
             $seriesFor = function (string $model) use ($from, $to, $labels) {
                 /** @var \Illuminate\Database\Eloquent\Model $model */
+                // Use strftime for SQLite, DATE_FORMAT for MySQL
+                $dateFormat = DB::connection()->getDriverName() === 'sqlite' 
+                    ? "strftime('%Y-%m', created_at)"
+                    : "DATE_FORMAT(created_at, '%Y-%m')";
+                
                 $rows = $model::whereBetween('created_at', [$from, $to])
-                    ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as ym, COUNT(*) as c')
+                    ->selectRaw("{$dateFormat} as ym, COUNT(*) as c")
                     ->groupBy('ym')
                     ->pluck('c', 'ym')
                     ->toArray();

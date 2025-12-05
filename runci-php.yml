@@ -64,7 +64,7 @@ jobs:
         run: |
           # Use sqlite for CI tests
           php -r "file_exists('phpunit.xml') || copy('phpunit.xml.dist','phpunit.xml');"
-          php -r '$xml = file_get_contents("phpunit.xml"); $xml = str_replace("<env name=\"DB_CONNECTION\" value=\"mysql\"/>","<env name=\"DB_CONNECTION\" value=\"sqlite\"/>",$xml); file_put_contents("phpunit.xml",$xml);'
+          php -r '$xml = file_get_contents("phpunit.xml"); $xml = str_replace("<env name=\"DB_CONNECTION\" value=\"mysql\"/>","<env name=\"DB_CONNECTION\" value=\"sqlite\"/>", $xml); file_put_contents("phpunit.xml", $xml);'
 
       - name: Run migrations
         env:

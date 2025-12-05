@@ -1,0 +1,14 @@
+node_modules/
+vendor/
+storage/logs/
+.env.local
+.env.*.local
+tests/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.bat
+*.cmd
+*.ps1

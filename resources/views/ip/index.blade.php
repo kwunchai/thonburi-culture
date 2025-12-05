@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.frontend')
 @section('title','ทรัพย์สินทางปัญญา')
 
 @section('content')
@@ -23,31 +23,22 @@
           <option value="{{ $s }}" @selected(request('status')===$s)>{{ $s }}</option>
         @endforeach
       </select>
-      <select name="year" class="px-3 py-2 rounded-lg border">
-        <option value="">ทุกปี</option>
-        @foreach($years as $y)
-          <option value="{{ $y }}" @selected(request('year')==$y)>{{ $y }}</option>
-        @endforeach
-      </select>
       <button class="px-4 py-2 rounded-lg bg-indigo-600 text-white">กรอง</button>
     </form>
   </div>
 
   <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
     @forelse($items as $ip)
-      <a href="{{ route('ip.show',$ip) }}" class="block rounded-xl border bg-white p-4 hover:shadow">
-        <div class="text-xs text-slate-500">{{ $ip->application_no ?? '—' }}</div>
+      <a href="{{ route('ip.public.show', $ip->ip_id) }}" class="block rounded-xl border bg-white p-4 hover:shadow">
+        <div class="text-xs text-slate-500">{{ $ip->registration_number ?? '—' }}</div>
         <h3 class="mt-1 font-semibold line-clamp-2">{{ $ip->title }}</h3>
         <div class="mt-2 flex items-center gap-2 text-sm">
           <span class="px-2 py-0.5 rounded bg-slate-100">{{ $ip->type }}</span>
           @if($ip->status)
           <span class="px-2 py-0.5 rounded bg-emerald-100">{{ $ip->status }}</span>
           @endif
-          @if($ip->budget_year)
-          <span class="px-2 py-0.5 rounded bg-sky-100">ปี {{ $ip->budget_year }}</span>
-          @endif
         </div>
-        <div class="mt-2 text-sm text-slate-600 line-clamp-2">{{ $ip->research_title }}</div>
+        <div class="mt-2 text-sm text-slate-600 line-clamp-2">{{ Str::limit($ip->description, 100) }}</div>
       </a>
     @empty
       <div class="col-span-full text-slate-500">ไม่พบข้อมูล</div>

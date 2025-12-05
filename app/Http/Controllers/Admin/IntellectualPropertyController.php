@@ -9,6 +9,7 @@ use App\Models\IntellectualProperty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class IntellectualPropertyController extends Controller
 {
@@ -62,27 +63,67 @@ class IntellectualPropertyController extends Controller
         return view('admin.ip.index', compact('items', 'stats'));
     }
 
-    public function export()
+    public function export(Request $request)
     {
-        $items = IntellectualProperty::all();
-
-        $csvContent = "\xEF\xBB\xBF"; // UTF-8 BOM
-        $csvContent .= "ลำดับ,ชื่อเรื่อง,เลขทะเบียน,ประเภท,สถานะ,วันหมดอายุ,วันที่สร้าง\n";
-
-        foreach ($items as $index => $item) {
-            $csvContent .= ($index + 1) . ',';
-            $csvContent .= '"' . str_replace('"', '""', $item->title) . '",';
-            $csvContent .= '"' . str_replace('"', '""', $item->registration_number ?? '') . '",';
-            $csvContent .= '"' . str_replace('"', '""', $item->type?->label() ?? '') . '",';
-            $csvContent .= '"' . str_replace('"', '""', $item->status?->label() ?? '') . '",';
-            $csvContent .= ($item->expiry_date ? $item->expiry_date->format('d/m/Y') : '') . ',';
-            $csvContent .= $item->created_at->format('d/m/Y H:i');
-            $csvContent .= "\n";
+        try {
+            // Simple test response first
+            $format = $request->get('export', 'excel');
+            
+            if ($format === 'test') {
+                return response()->json(['message' => 'Export method is working!']);
+            }
+            
+            $query = IntellectualProperty::query();
+            
+            // Apply same filters as index
+            if ($request->has('search') && $request->search != '') {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', '%' . $search . '%')
+                      ->orWhere('registration_number', 'like', '%' . $search . '%')
+                      ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            }
+            
+            if ($request->has('type') && $request->type != '') {
+                $query->where('type', $request->type);
+            }
+            
+            if ($request->has('status') && $request->status != '') {
+                $query->where('status', $request->status);
+            }
+            
+            $items = $query->orderBy('created_at', 'desc')->get();
+            
+            // Simple CSV export
+            $filename = 'intellectual-property-' . date('Y-m-d') . '.csv';
+            
+            $csvContent = "\xEF\xBB\xBF"; // UTF-8 BOM
+            $csvContent .= "ID,ชื่อเรื่อง,เลขทะเบียน,ประเภท,สถานะ,วันที่สร้าง\n";
+            
+            foreach ($items as $item) {
+                $csvContent .= $item->id . ',';
+                $csvContent .= '"' . str_replace('"', '""', $item->title) . '",';
+                $csvContent .= '"' . str_replace('"', '""', $item->registration_number ?? '') . '",';
+                $csvContent .= '"' . str_replace('"', '""', $item->type_label ?? $item->type ?? '') . '",';
+                $csvContent .= '"' . str_replace('"', '""', $item->status_label ?? $item->status ?? '') . '",';
+                $csvContent .= $item->created_at->format('d/m/Y H:i');
+                $csvContent .= "\n";
+            }
+            
+            return response($csvContent)
+                ->header('Content-Type', 'text/csv; charset=UTF-8')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                
+        } catch (\Exception $e) {
+            // Return error as JSON for debugging
+            return response()->json([
+                'error' => 'Export failed',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
-
-        return response($csvContent)
-            ->header('Content-Type', 'text/csv; charset=UTF-8')
-            ->header('Content-Disposition', 'attachment; filename="intellectual-property-' . date('Y-m-d') . '.csv"');
     }
 
     public function create()

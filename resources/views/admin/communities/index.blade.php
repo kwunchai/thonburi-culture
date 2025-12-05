@@ -106,12 +106,21 @@
             </h3>
         </div>
         <div class="col-md-6 text-right">
-            <a href="{{ route('admin.communities.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> เพิ่มชุมชนใหม่
-            </a>
-            <a href="{{ route('admin.communities.export') }}" class="btn btn-success">
-                <i class="fas fa-file-excel"></i> Export CSV
-            </a>
+            <div class="btn-group">
+                <a href="{{ route('admin.communities.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> เพิ่มชุมชนใหม่
+                </a>
+            </div>
+            <div class="btn-group ml-2">
+                <button type="button" class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown">
+                    <i class="fas fa-download"></i> ส่งออกข้อมูล
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ route('admin.communities.export', array_merge(request()->all(), ['export' => 'excel'])) }}">
+                        <i class="fas fa-file-excel text-success"></i> ส่งออก Excel
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -124,7 +133,6 @@
                             <input type="checkbox" id="select-all">
                         </th>
                         <th style="width: 60px">ID</th>
-                        <th style="width: 100px">รูปภาพ</th>
                         <th>ชื่อชุมชน</th>
                         <th>คำอธิบาย</th>
                         <th style="width: 100px" class="text-center">ข้อมูลวัฒนธรรม</th>
@@ -140,19 +148,6 @@
                             <input type="checkbox" class="community-checkbox" value="{{ $community->id }}">
                         </td>
                         <td>{{ $community->id }}</td>
-                        <td>
-                            @if($community->image)
-                                <img src="{{ Storage::url($community->image) }}" 
-                                     alt="{{ $community->name }}"
-                                     class="img-thumbnail"
-                                     style="width: 80px; height: 60px; object-fit: cover;">
-                            @else
-                                <div class="bg-light d-flex align-items-center justify-content-center"
-                                     style="width: 80px; height: 60px;">
-                                    <i class="fas fa-image text-muted"></i>
-                                </div>
-                            @endif
-                        </td>
                         <td>
                             <strong>{{ $community->name }}</strong>
                             @if($community->established_year)

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test IP Export - Debugging</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Test IP Export - Debugging</h1>
+    
+    <h3>Test Links:</h3>
+    <ul>
+        <li><a href="/admin/ip/export?export=test" target="_blank">Test Method (JSON Response)</a></li>
+        <li><a href="/admin/ip/export?export=excel" target="_blank">Export Excel</a></li>
+        <li><a href="/admin/ip" target="_blank">IP Index Page</a></li>
+    </ul>
+    
+    <h3>Debug Info:</h3>
+    <pre id="debug"></pre>
+    
+    <script>
+        document.getElementById('debug').innerHTML = `
+Current URL: ${window.location.href}
+User Agent: ${navigator.userAgent}
+Timestamp: ${new Date().toISOString()}
+        `;
+        
+        // Test AJAX call
+        fetch('/admin/ip/export?export=test')
+            .then(response => response.json())
+            .then(data => {
+                console.log('AJAX Test Success:', data);
+                document.getElementById('debug').innerHTML += '\n\nAJAX Test Result: ' + JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('AJAX Test Error:', error);
+                document.getElementById('debug').innerHTML += '\n\nAJAX Test Error: ' + error.message;
+            });
+    </script>
+</body>
+</html>

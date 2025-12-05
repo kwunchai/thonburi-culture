@@ -4,7 +4,10 @@ namespace App\Providers;
 
 // 1. นำเข้า Model และ Policy ของคุณ
 use App\Models\IntellectualProperty;
-use App\Policies\IntellectualPropertyPolicy; 
+use App\Policies\IntellectualPropertyPolicy;
+use App\Models\Activity;
+use App\Policies\ActivityPolicy; 
+use Illuminate\Support\Facades\Gate;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -18,6 +21,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         // เพิ่มการแมปของคุณตรงนี้: 'Model::class' => 'Policy::class'
         IntellectualProperty::class => IntellectualPropertyPolicy::class,
+        Activity::class => ActivityPolicy::class,
     ];
 
     /**
@@ -25,6 +29,9 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 2. ไม่ต้องทำอะไรเพิ่มในฟังก์ชัน boot
+        // 2. Define custom gates
+        Gate::define('manage-activities', function ($user) {
+            return $user->hasRole(['admin', 'editor']);
+        });
     }
 }

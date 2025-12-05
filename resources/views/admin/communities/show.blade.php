@@ -134,14 +134,19 @@
         </div>
         
         <!-- Gallery -->
-        @if($community->gallery_images && count($community->gallery_images) > 0)
+        @php
+            $galleryImages = is_string($community->gallery_images) 
+                ? json_decode($community->gallery_images, true) 
+                : $community->gallery_images;
+        @endphp
+        @if(!empty($galleryImages) && is_array($galleryImages) && count($galleryImages) > 0)
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">รูปภาพเพิ่มเติม</h3>
             </div>
             <div class="card-body">
                 <div class="row">
-                    @foreach($community->gallery_images as $image)
+                    @foreach($galleryImages as $image)
                     <div class="col-md-4 mb-3">
                         <a href="{{ Storage::url($image) }}" target="_blank">
                             <img src="{{ Storage::url($image) }}" 
@@ -326,7 +331,7 @@
 
 @if($community->hasLocation())
 @push('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&callback=initMap" async defer></script>
 <script>
 function initMap() {
     const location = { lat: {{ $community->latitude }}, lng: {{ $community->longitude }} };

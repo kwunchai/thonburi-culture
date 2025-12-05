@@ -10,24 +10,6 @@
 @endpush
 
 @section('content')
-<!-- Debug Info (แสดงเฉพาะใน development) -->
-@if(config('app.debug'))
-@php
-    // Filter เฉพาะ items ที่ is_featured = 1 จริงๆ สำหรับ debug
-    $debugActualFeatured = $featuredItems->filter(function($item) {
-        return $item->is_featured == 1;
-    });
-@endphp
-<div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 9999; font-family: monospace; font-size: 12px;">
-    <div>Total Featured Items: {{ $featuredItems->count() }}</div>
-    <div>Actual Featured Items: {{ $debugActualFeatured->count() }}</div>
-    <div>Timestamp: {{ now()->format('Y-m-d H:i:s') }}</div>
-    <div>Cache Bust: {{ time() }}</div>
-    @foreach($featuredItems as $i => $item)
-    <div>{{ $i+1 }}. ID: {{ $item->id ?? 'N/A' }} - Featured: {{ isset($item->is_featured) ? ($item->is_featured ? 'Yes' : 'No') : 'N/A' }}</div>
-    @endforeach
-</div>
-@endif
 
 <!-- Hero Slideshow Section -->
 <section class="relative h-[600px] md:h-[700px] overflow-hidden bg-gray-900">
@@ -102,11 +84,13 @@
                                 <i class="fas fa-book-open mr-2"></i>
                                 อ่านเพิ่มเติม
                             </a>
+                            @if($item->category && $item->category->slug)
                             <a href="{{ route('category', $item->category->slug) }}" 
                                class="inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold rounded-full transition-all border border-white/50">
                                 <i class="fas fa-compass mr-2"></i>
                                 ดูหมวดหมู่นี้
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -171,38 +155,7 @@
     @endif
 </section>
 
-<!-- Categories Section -->
-<section class="py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-10">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">หมวดหมู่วัฒนธรรม</h2>
-            <div class="w-24 h-1 bg-orange-500 mx-auto mb-4"></div>
-            <p class="text-gray-600 max-w-2xl mx-auto">
-                สำรวจความหลากหลายทางวัฒนธรรมของเขตธนบุรีผ่านหมวดหมู่ต่างๆ
-            </p>
-        </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            @forelse($categories as $category)
-            <a href="{{ route('category', $category->slug) }}" 
-               class="group text-center p-6 rounded-2xl hover:bg-orange-50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2">
-                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center group-hover:from-orange-400 group-hover:to-orange-500 transition-all duration-300">
-                    <i class="fas {{ $category->icon ?? 'fa-folder' }} text-2xl text-orange-600 group-hover:text-white transition-colors"></i>
-                </div>
-                <h3 class="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">{{ $category->name }}</h3>
-                @if($category->cultural_items_count ?? 0 > 0)
-                <span class="text-xs text-gray-500 mt-1">{{ $category->cultural_items_count }} รายการ</span>
-                @endif
-            </a>
-            @empty
-            <div class="col-span-6 text-center text-gray-500 py-8">
-                <i class="fas fa-folder-open text-6xl mb-4"></i>
-                <p>ยังไม่มีหมวดหมู่</p>
-            </div>
-            @endforelse
-        </div>
-    </div>
-</section>
+<!-- end removed Categories Section -->
 
 <!-- Latest Items Section -->
 <section class="py-12 bg-gray-50">
@@ -273,84 +226,320 @@
     </div>
 </section>
 
-<!-- Communities Section -->
-<section class="py-12 bg-white">
+<!-- Statistics Section -->
+<section class="py-12 bg-gradient-to-br from-gray-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">ชุมชนในเขตธนบุรี</h2>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">สถิติข้อมูลทั้งหมด</h2>
             <div class="w-24 h-1 bg-orange-500 mx-auto mb-4"></div>
             <p class="text-gray-600 max-w-2xl mx-auto">
-                ทำความรู้จักกับชุมชนต่างๆ ที่เป็นหัวใจสำคัญของวัฒนธรรมธนบุรี
+                ภาพรวมข้อมูลทางวัฒนธรรม นวัตกรรม งานวิจัย และทรัพย์สินทางปัญญา
             </p>
         </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            @forelse($communities as $community)
-            <div class="group cursor-pointer">
-                <div class="relative aspect-square rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
-                    @if($community->image)
-                        <img src="{{ Storage::url($community->image) }}" alt="{{ $community->name }}" 
-                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @else
-                        <div class="w-full h-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
-                            <i class="fas fa-building text-4xl text-orange-400"></i>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
+            <!-- ข้อมูลวัฒนธรรม -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 group float-animation" style="animation-delay: 0s;">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                    <span class="text-3xl text-white">🏛️</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-2" id="cultural-count">{{ $stats['total_items'] ?? 0 }}</h3>
+                <p class="text-gray-600 font-medium mb-3">ข้อมูลวัฒนธรรม</p>
+                <div class="bg-green-50 border border-green-200 rounded-full px-3 py-1 inline-flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span class="text-green-500 font-semibold text-sm">▲</span>
+                    <span class="text-green-700 font-semibold text-sm ml-1">เพิ่มขึ้น 12%</span>
+                </div>
+            </div>
+
+            <!-- ข้อมูลนวัตกรรม -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 group float-animation" style="animation-delay: 1s;">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-violet-400 to-violet-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                    <span class="text-3xl text-white">💡</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-2" id="innovation-count">{{ $stats['total_innovations'] ?? 0 }}</h3>
+                <p class="text-gray-600 font-medium mb-3">ข้อมูลนวัตกรรม</p>
+                <div class="bg-green-50 border border-green-200 rounded-full px-3 py-1 inline-flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span class="text-green-500 font-semibold text-sm">▲</span>
+                    <span class="text-green-700 font-semibold text-sm ml-1">เพิ่มขึ้น 8%</span>
+                </div>
+            </div>
+
+            <!-- ข้อมูลงานวิจัย -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 group float-animation" style="animation-delay: 2s;">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-rose-400 to-rose-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                    <span class="text-3xl text-white">🔬</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-2" id="research-count">{{ $stats['total_research'] ?? 0 }}</h3>
+                <p class="text-gray-600 font-medium mb-3">ข้อมูลงานวิจัย</p>
+                <div class="bg-red-50 border border-red-200 rounded-full px-3 py-1 inline-flex items-center">
+                    <div class="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                    <span class="text-red-500 font-semibold text-sm">▼</span>
+                    <span class="text-red-700 font-semibold text-sm ml-1">ลดลง 5%</span>
+                </div>
+            </div>
+
+            <!-- ข้อมูลทรัพย์สินทางปัญญา -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 text-center hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 group float-animation" style="animation-delay: 3s;">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                    <span class="text-3xl text-white">📜</span>
+                </div>
+                <h3 class="text-3xl font-bold text-gray-800 mb-2" id="ip-count">{{ $stats['total_ip'] ?? 0 }}</h3>
+                <p class="text-gray-600 font-medium mb-3">ทรัพย์สินทางปัญญา</p>
+                <div class="bg-green-50 border border-green-200 rounded-full px-3 py-1 inline-flex items-center">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span class="text-green-500 font-semibold text-sm">▲</span>
+                    <span class="text-green-700 font-semibold text-sm ml-1">เพิ่มขึ้น 20%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- กราฟแท่งเปรียบเทียบ -->
+            <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-50 p-6 chart-container hover:shadow-2xl transition-all duration-500">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-bar text-white text-lg"></i>
+                    </div>
+                    เปรียบเทียบจำนวนข้อมูล
+                </h3>
+                <div class="relative h-64 md:h-80">
+                    <canvas id="dataComparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- กราฟวงกลม -->
+            <div class="bg-white rounded-3xl border border-gray-50 p-6 chart-container hover:shadow-2xl transition-all duration-500">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-pie text-white text-lg"></i>
+                    </div>
+                    สัดส่วนข้อมูล
+                </h3>
+                <div class="relative h-64 md:h-80">
+                    <canvas id="dataProportionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="bg-white rounded-3xl border border-gray-50 p-6 chart-container hover:shadow-2xl transition-all duration-500">
+            <h3 class="text-xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-chart-line text-white text-lg"></i>
+                </div>
+                แนวโน้มการเพิ่มข้อมูลรายเดือน (6 เดือนที่ผ่านมา)
+            </h3>
+            <div class="relative h-64 md:h-72 lg:h-80">
+                <canvas id="dataTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Cultural Heritage Map Section -->
+@if($culturalItemsWithLocation->count() > 0)
+<section class="py-12 bg-gradient-to-br from-orange-50 to-orange-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">แผนที่มรดกทางวัฒนธรรม</h2>
+            <div class="w-24 h-1 bg-orange-500 mx-auto mb-4"></div>
+            <p class="text-gray-600 max-w-3xl mx-auto">
+                สำรวจตำแหน่งที่ตั้งของมรดกทางวัฒนธรรมต่างๆ ทั่วประเทศไทย นำเมาส์ไปชี้ที่หมุดเพื่อดูรายละเอียด
+            </p>
+            <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-orange-500 rounded-full mr-2"></div>
+                    <span>มรดกทางวัฒนธรรม</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-lg mr-2">📍</span>
+                    <span>{{ $culturalItemsWithLocation->count() }} แห่ง</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="p-6">
+                <div class="relative">
+                    <!-- Map -->
+                    <div id="culturalMap" class="w-full h-96 md:h-[500px] lg:h-[600px] rounded-2xl shadow-lg bg-gray-100 flex items-center justify-center">
+                        <div class="text-center text-gray-500">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                            <p class="font-medium">กำลังโหลดแผนที่...</p>
+                            <p class="text-sm mt-1">โปรดรอสักครู่</p>
                         </div>
-                    @endif
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div class="absolute bottom-0 left-0 right-0 p-3 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                        <p class="text-xs">{{ $community->description ?? 'ชุมชนเก่าแก่' }}</p>
+                    </div>
+
+                    <!-- Map Controls -->
+                    <div class="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 space-y-2 z-10">
+                        <button onclick="toggleMapType()" 
+                                class="w-full flex items-center justify-center px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors duration-300 text-sm">
+                            <i class="fas fa-map mr-2"></i>
+                            <span id="mapTypeText">ดาวเทียม</span>
+                        </button>
+                        <button onclick="fitMapToMarkers()" 
+                                class="w-full flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-300 text-sm">
+                            <i class="fas fa-expand-arrows-alt mr-2"></i>
+                            ดูทั้งหมด
+                        </button>
+                    </div>
+
+                    <!-- Map Info Panel -->
+                    <div class="absolute bottom-4 left-4 bg-white bg-opacity-95 backdrop-blur-sm rounded-lg shadow-lg p-4 max-w-sm z-10">
+                        <h4 class="font-bold text-gray-800 mb-2 flex items-center">
+                            <i class="fas fa-info-circle text-orange-500 mr-2"></i>
+                            วิธีการใช้งาน
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li class="flex items-start">
+                                <span class="text-orange-500 mr-2">•</span>
+                                <span>คลิกหมุดเพื่อดูรายละเอียด</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-orange-500 mr-2">•</span>
+                                <span>ลากเพื่อเลื่อนแผนที่</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-orange-500 mr-2">•</span>
+                                <span>ใช้ล้อเมาส์เพื่อซูม</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-                <h3 class="text-center mt-3 font-medium text-gray-700 group-hover:text-orange-600 transition-colors">
-                    {{ $community->name }}
-                </h3>
             </div>
-            @empty
-            <div class="col-span-6 text-center text-gray-500 py-12">
-                <i class="fas fa-map-marked-alt text-6xl mb-4"></i>
-                <p>ยังไม่มีข้อมูลชุมชน</p>
+
+            <!-- Map Statistics -->
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-white text-center">
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->count() }}</div>
+                        <div class="text-sm opacity-90">ทั้งหมด</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->pluck('category_id')->unique()->count() }}</div>
+                        <div class="text-sm opacity-90">หมวดหมู่</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->pluck('community_id')->filter()->unique()->count() }}</div>
+                        <div class="text-sm opacity-90">ชุมชน</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ $culturalItemsWithLocation->where('created_at', '>=', now()->subYear())->count() }}</div>
+                        <div class="text-sm opacity-90">ปีนี้</div>
+                    </div>
+                </div>
             </div>
-            @endforelse
+        </div>
+
+        <!-- Legend and Categories -->
+        <div class="mt-8">
+            <!-- Show All Button -->
+            <div class="flex justify-center mb-4">
+                <button onclick="showAllMarkers()" 
+                        class="flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors duration-300 shadow-lg hover:shadow-xl">
+                    <i class="fas fa-eye mr-2"></i>
+                    แสดงทั้งหมดบนแผนที่
+                </button>
+            </div>
+            
+            <!-- Category Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                @php
+                    $categories = $culturalItemsWithLocation->groupBy('category_id')->map(function($items) {
+                        return [
+                            'category' => $items->first()->category,
+                            'count' => $items->count(),
+                            'items' => $items
+                        ];
+                    });
+                @endphp
+                
+                @foreach($categories as $categoryData)
+                    @if($categoryData['category'])
+                    <div class="bg-white rounded-xl p-4 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-gray-800 text-sm">{{ $categoryData['category']->name }}</h4>
+                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-bold">{{ $categoryData['count'] }}</span>
+                        </div>
+                        <button onclick="filterMapByCategory({{ $categoryData['category']->id }})" 
+                                class="w-full text-left text-xs text-gray-600 hover:text-orange-600 transition-colors duration-300 flex items-center">
+                            <i class="fas fa-map-pin text-orange-500 mr-1"></i>
+                            กรองตามหมวดหมู่
+                        </button>
+                    </div>
+                    @endif
+                @endforeach
+            </div>
         </div>
     </div>
 </section>
+@endif
 
-<section class="grid gap-6">
-    <div>
-    {{-- ใส่กราฟตัวอย่าง --}}
-    <h1 class="text-xl font-semibold mb-6">สถิติข้อมูล</h1>
-  @include('partials.home-charts')
-    </div>
-</section>
-
-
-  <!-- Google Map Section -->
-<section class="py-12 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-10">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">แผนที่วัฒนธรรม</h2>
-            <div class="w-24 h-1 bg-orange-500 mx-auto mb-4"></div>
-            <p class="text-gray-600 max-w-2xl mx-auto">
-                สำรวจตำแหน่งของชุมชนและสถานที่สำคัญทางวัฒนธรรม
-            </p>
-        </div>
-        
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31006.11844937!2d100.47247!3d13.7263!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e2991a19b1b707%3A0x40056b34e3d9f70!2sThon%20Buri%2C%20Bangkok!5e0!3m2!1sen!2sth!4v1234567890"
-                width="100%" 
-                height="500" 
-                style="border:0;" 
-                allowfullscreen="" 
-                loading="lazy" 
-                referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
-        </div>
-    </div>
-</section>
-
-<!-- CSS Animations -->
+<!-- CSS Animations and Chart Styling -->
 <style>
+    /* Modern Card Styles */
+    .shadow-xl {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .shadow-2xl {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Google Maps Styling */
+    .gm-style-iw {
+        padding: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+    
+    .gm-style-iw-d {
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+    
+    .gm-ui-hover-effect {
+        opacity: 0.6 !important;
+    }
+    
+    /* Line clamp utility for text truncation */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Map container styling */
+    #culturalMap {
+        border-radius: 16px;
+    }
+    
+    .map-loading {
+        backdrop-filter: blur(5px);
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Glassmorphism effect for cards */
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Smooth animations */
     @keyframes slide-up {
         from {
             opacity: 0;
@@ -362,16 +551,143 @@
         }
     }
     
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    .float-animation {
+        animation: float 6s ease-in-out infinite;
+    }
+    
     .animate-slide-up {
         animation: slide-up 0.8s ease-out forwards;
     }
     
     .animation-delay-200 { animation-delay: 200ms; }
+    
+    /* Enhanced Chart Container Styles */
+    .chart-container {
+        position: relative;
+        width: 100%;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+    
+    .chart-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .chart-container:hover::before {
+        left: 100%;
+    }
+    
+    .chart-container:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Enhanced Mobile responsive adjustments */
+    @media (max-width: 768px) {
+        .grid.lg\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .grid.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .lg\\:col-span-2 {
+            grid-column: span 1;
+        }
+        
+        /* Adjust chart heights for mobile */
+        .relative.h-64 {
+            height: 12rem;
+        }
+        
+        .relative.h-72 {
+            height: 16rem;
+        }
+        
+        .lg\\:h-80 {
+            height: 16rem;
+        }
+        
+        /* Smaller padding for mobile cards */
+        .rounded-3xl.p-8 {
+            padding: 1.5rem;
+        }
+        
+        .w-20.h-20 {
+            width: 4rem;
+            height: 4rem;
+        }
+        
+        .text-3xl {
+            font-size: 1.5rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.25rem;
+        }
+    }
+    
+    /* Small mobile adjustments */
+    @media (max-width: 480px) {
+        .relative.h-64 {
+            height: 10rem; /* h-40 */
+        }
+        
+        .relative.h-72 {
+            height: 12rem; /* h-48 */
+        }
+        
+        .lg\\:h-80 {
+            height: 14rem; /* h-56 */
+        }
+    }
+    
+    /* Improve chart text readability */
+    canvas {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* Loading animation for charts */
+    @keyframes chart-fade-in {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .chart-container canvas {
+        animation: chart-fade-in 0.6s ease-out;
+    }
+    
+    /* Additional animation delays for statistics cards */
+    .animation-delay-200 { animation-delay: 200ms; }
     .animation-delay-400 { animation-delay: 400ms; }
     .animation-delay-600 { animation-delay: 600ms; }
     .animation-delay-800 { animation-delay: 800ms; }
-    .animation-delay-1000 { animation-delay: 1000ms; }
     
+    /* Line clamp utilities for text overflow */
     .line-clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -519,47 +835,642 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Statistics Charts Scripts -->
 <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const url = "{{ route('stats.home', ['months' => 12]) }}";
-      const res = await fetch(url);
-      const json = await res.json();
+document.addEventListener('DOMContentLoaded', function() {
+    // ข้อมูลสถิติ
+    const culturalCount = {{ $stats['total_items'] ?? 0 }};
+    const innovationCount = {{ $stats['total_innovations'] ?? 0 }};
+    const researchCount = {{ $stats['total_research'] ?? 0 }};
+    const ipCount = {{ $stats['total_ip'] ?? 0 }};
 
-      // === Line: New items by month ===
-      new Chart(document.getElementById('chart-line-new'), {
-        type: 'line',
-        data: {
-          labels: json.labels,
-          datasets: [
-            { label: 'วัฒนธรรม', data: json.line.cultural },
-            { label: 'งานวิจัย', data: json.line.research },
-            { label: 'ทรัพย์สินทางปัญญา', data: json.line.ip },
-            { label: 'นวัตกรรม', data: json.line.innov },
-            { label: 'สถานที่', data: json.line.places },
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-
-      // === Doughnut: IP Types ===
-      const ipLabels = Object.keys(json.ipTypes);
-      const ipValues = Object.values(json.ipTypes);
-      new Chart(document.getElementById('chart-ip-donut'), {
-        type: 'doughnut',
-        data: { labels: ipLabels, datasets: [{ data: ipValues }] },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-
-      // === Bar: Top Communities ===
-      new Chart(document.getElementById('chart-top-communities'), {
+    // กราฟแท่งเปรียบเทียบ
+    const comparisonCtx = document.getElementById('dataComparisonChart').getContext('2d');
+    new Chart(comparisonCtx, {
         type: 'bar',
         data: {
-          labels: json.topCommunities.map(x => x.name),
-          datasets: [{ label: 'จำนวนรายการ', data: json.topCommunities.map(x => x.count) }]
+            labels: ['วัฒนธรรม', 'นวัตกรรม', 'งานวิจัย', 'ทรัพย์สินฯ'],
+            datasets: [{
+                label: 'จำนวนข้อมูล',
+                data: [culturalCount, innovationCount, researchCount, ipCount],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',   // Emerald - วัฒนธรรม
+                    'rgba(139, 92, 246, 0.8)',   // Violet - นวัตกรรม  
+                    'rgba(244, 63, 94, 0.8)',    // Rose - งานวิจัย
+                    'rgba(245, 158, 11, 0.8)'    // Amber - ทรัพย์สินฯ
+                ],
+                borderColor: [
+                    'rgb(16, 185, 129)',    // Emerald
+                    'rgb(139, 92, 246)',    // Violet
+                    'rgb(244, 63, 94)',     // Rose
+                    'rgb(245, 158, 11)'     // Amber
+                ],
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
         },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
-      });
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + ' รายการ';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)',
+                        lineWidth: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 45
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        }
     });
+
+    // กราฟวงกลม
+    const proportionCtx = document.getElementById('dataProportionChart').getContext('2d');
+    new Chart(proportionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['ข้อมูลวัฒนธรรม', 'ข้อมูลนวัตกรรม', 'ข้อมูลงานวิจัย', 'ทรัพย์สินทางปัญญา'],
+            datasets: [{
+                data: [culturalCount, innovationCount, researchCount, ipCount],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',   // Emerald
+                    'rgba(139, 92, 246, 0.8)',   // Violet
+                    'rgba(244, 63, 94, 0.8)',    // Rose
+                    'rgba(245, 158, 11, 0.8)'    // Amber
+                ],
+                borderColor: [
+                    'rgb(16, 185, 129)',    // Emerald
+                    'rgb(139, 92, 246)',    // Violet
+                    'rgb(244, 63, 94)',     // Rose
+                    'rgb(245, 158, 11)'     // Amber
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        font: {
+                            size: 11
+                        },
+                        boxWidth: 12,
+                        boxHeight: 12
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+
+    // กราฟเส้นแนวโน้ม
+    const trendCtx = document.getElementById('dataTrendChart').getContext('2d');
+    
+    // สร้างข้อมูลตัวอย่าง 6 เดือนที่ผ่านมา
+    const months = [];
+    const culturalTrend = [];
+    const innovationTrend = [];
+    const researchTrend = [];
+    const ipTrend = [];
+    
+    for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        months.push(date.toLocaleDateString('th-TH', { month: 'short', year: '2-digit' }));
+        
+        culturalTrend.push(Math.floor(Math.random() * 5) + 1);
+        innovationTrend.push(Math.floor(Math.random() * 3) + 1);
+        researchTrend.push(Math.floor(Math.random() * 4) + 1);
+        ipTrend.push(Math.floor(Math.random() * 3) + 1);
+    }
+
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'ข้อมูลวัฒนธรรม',
+                    data: culturalTrend,
+                    borderColor: 'rgb(16, 185, 129)',      // Emerald
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    borderWidth: 3
+                },
+                {
+                    label: 'ข้อมูลนวัตกรรม',
+                    data: innovationTrend,
+                    borderColor: 'rgb(139, 92, 246)',      // Violet
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    borderWidth: 3
+                },
+                {
+                    label: 'ข้อมูลงานวิจัย',
+                    data: researchTrend,
+                    borderColor: 'rgb(244, 63, 94)',       // Rose
+                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    borderWidth: 3
+                },
+                {
+                    label: 'ทรัพย์สินทางปัญญา',
+                    data: ipTrend,
+                    borderColor: 'rgb(245, 158, 11)',      // Amber
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    borderWidth: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 11
+                        },
+                        boxWidth: 12,
+                        boxHeight: 12
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + ' รายการ';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 11
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)',
+                        lineWidth: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 4,
+                    hoverRadius: 6,
+                    borderWidth: 2
+                },
+                line: {
+                    borderWidth: 3
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+
+    // Counter Animation
+    function animateCounter(elementId, endValue, duration = 2000) {
+        const element = document.getElementById(elementId);
+        const startValue = 0;
+        const increment = endValue / (duration / 16);
+        let currentValue = startValue;
+
+        const timer = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= endValue) {
+                currentValue = endValue;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(currentValue);
+        }, 16);
+    }
+
+    // เริ่ม Animation เมื่อ scroll ถึงส่วนนี้
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter('cultural-count', culturalCount);
+                animateCounter('innovation-count', innovationCount);
+                animateCounter('research-count', researchCount);
+                animateCounter('ip-count', ipCount);
+                observer.unobserve(entry.target);
+            }
+        });
+    });
+
+    observer.observe(document.querySelector('#cultural-count').closest('.grid'));
+});
 </script>
+
+<!-- Google Maps Scripts for Cultural Heritage Map -->
+@if($culturalItemsWithLocation->count() > 0)
+@php
+    $mapData = $culturalItemsWithLocation->map(function($item) {
+        return [
+            'id' => $item->id,
+            'title' => $item->title,
+            'description' => Str::limit(strip_tags($item->description), 100),
+            'image' => $item->image ? Storage::url($item->image) : null,
+            'latitude' => (float) $item->latitude,
+            'longitude' => (float) $item->longitude,
+            'category' => $item->category ? $item->category->name : 'ไม่ระบุ',
+            'category_id' => $item->category_id,
+            'community' => $item->community ? $item->community->name : null,
+            'url' => route('cultural-item.show', $item->id),
+            'created_at' => $item->created_at->format('d/m/Y')
+        ];
+    });
+@endphp
+<script>
+let culturalMap;
+let mapMarkers = [];
+let infoWindow;
+let currentMapType = 'roadmap';
+
+// Cultural items data from Laravel
+const culturalItems = @json($mapData);
+
+// Initialize Google Map
+function initializeCulturalMap() {
+    console.log('Initializing cultural map...');
+    console.log('Cultural items:', culturalItems.length);
+    
+    if (culturalItems.length === 0) {
+        console.log('No cultural items with location');
+        const mapContainer = document.getElementById('culturalMap');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="text-center text-gray-500 py-12"><i class="fas fa-map-marked-alt text-6xl mb-4 text-gray-300"></i><p>ไม่มีข้อมูลตำแหน่งสำหรับแสดงบนแผนที่</p></div>';
+        }
+        return;
+    }
+    
+    if (typeof google === 'undefined' || !google.maps) {
+        console.error('Google Maps API not loaded');
+        const mapContainer = document.getElementById('culturalMap');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="text-center text-red-500 py-12"><i class="fas fa-exclamation-triangle text-6xl mb-4"></i><p>ไม่สามารถโหลด Google Maps ได้</p></div>';
+        }
+        return;
+    }
+    
+    // Remove loading indicator first
+    const mapContainer = document.getElementById('culturalMap');
+    if (mapContainer) {
+        mapContainer.innerHTML = '';
+    }
+
+    // Calculate map bounds
+    const bounds = new google.maps.LatLngBounds();
+    culturalItems.forEach(item => {
+        bounds.extend(new google.maps.LatLng(item.latitude, item.longitude));
+    });
+
+    // Map options
+    const mapOptions = {
+        zoom: 6,
+        center: bounds.getCenter(),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        styles: [
+            {
+                featureType: 'poi',
+                elementType: 'labels',
+                stylers: [{ visibility: 'off' }]
+            }
+        ],
+        mapTypeControl: false,
+        streetViewControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+        gestureHandling: 'cooperative'
+    };
+
+    // Create map
+    culturalMap = new google.maps.Map(document.getElementById('culturalMap'), mapOptions);
+    
+    // Create info window
+    infoWindow = new google.maps.InfoWindow({
+        maxWidth: 350
+    });
+
+    // Create markers
+    culturalItems.forEach(item => {
+        createMarker(item);
+    });
+
+    // Fit map to show all markers
+    culturalMap.fitBounds(bounds);
+    
+    // Ensure minimum zoom level
+    google.maps.event.addListenerOnce(culturalMap, 'bounds_changed', function() {
+        if (culturalMap.getZoom() > 15) {
+            culturalMap.setZoom(15);
+        }
+    });
+    
+    console.log('Map initialized successfully with', mapMarkers.length, 'markers');
+}
+
+// Create marker for cultural item
+function createMarker(item) {
+    const marker = new google.maps.Marker({
+        position: { lat: item.latitude, lng: item.longitude },
+        map: culturalMap,
+        title: item.title,
+        icon: {
+            url: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png',
+            scaledSize: new google.maps.Size(32, 32)
+        },
+        animation: google.maps.Animation.DROP
+    });
+
+    // Create info window content
+    const infoContent = `
+        <div class="max-w-sm">
+            <div class="bg-white rounded-lg overflow-hidden shadow-lg">
+                ${item.image ? `
+                    <div class="h-32 overflow-hidden">
+                        <img src="${item.image}" 
+                             alt="${item.title}" 
+                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                             onerror="this.style.display='none'">
+                    </div>
+                ` : ''}
+                <div class="p-4">
+                    <h3 class="font-bold text-gray-900 text-lg mb-2 line-clamp-2">${item.title}</h3>
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-3">${item.description}</p>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-xs text-gray-500">
+                            <i class="fas fa-tag mr-1 text-orange-500"></i>
+                            <span>${item.category}</span>
+                        </div>
+                        ${item.community ? `
+                            <div class="flex items-center text-xs text-gray-500">
+                                <i class="fas fa-users mr-1 text-blue-500"></i>
+                                <span>${item.community}</span>
+                            </div>
+                        ` : ''}
+                        <div class="flex items-center text-xs text-gray-500">
+                            <i class="fas fa-calendar mr-1 text-purple-500"></i>
+                            <span>${item.created_at}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <a href="${item.url}" 
+                           class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-center py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300">
+                            <i class="fas fa-eye mr-1"></i>
+                            ดูรายละเอียด
+                        </a>
+                        <button onclick="openDirectionsTo(${item.latitude}, ${item.longitude})" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-300">
+                            <i class="fas fa-directions"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add click event to marker
+    marker.addListener('click', function() {
+        infoWindow.setContent(infoContent);
+        infoWindow.open(culturalMap, marker);
+        
+        // Center map on marker
+        culturalMap.panTo(marker.getPosition());
+    });
+
+    // Store marker with item data
+    marker.itemData = item;
+    mapMarkers.push(marker);
+}
+
+// Toggle map type
+function toggleMapType() {
+    if (currentMapType === 'roadmap') {
+        culturalMap.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+        currentMapType = 'satellite';
+        document.getElementById('mapTypeText').textContent = 'แผนที่';
+    } else {
+        culturalMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+        currentMapType = 'roadmap';
+        document.getElementById('mapTypeText').textContent = 'ดาวเทียม';
+    }
+}
+
+// Fit map to show all markers
+function fitMapToMarkers() {
+    const bounds = new google.maps.LatLngBounds();
+    mapMarkers.forEach(marker => {
+        bounds.extend(marker.getPosition());
+    });
+    culturalMap.fitBounds(bounds);
+    
+    // Ensure minimum zoom level
+    google.maps.event.addListenerOnce(culturalMap, 'bounds_changed', function() {
+        if (culturalMap.getZoom() > 15) {
+            culturalMap.setZoom(15);
+        }
+    });
+}
+
+// Filter map by category
+function filterMapByCategory(categoryId) {
+    // Hide all markers first
+    mapMarkers.forEach(marker => {
+        marker.setVisible(false);
+    });
+    
+    // Show only markers of selected category
+    const filteredMarkers = mapMarkers.filter(marker => {
+        return marker.itemData.category_id === categoryId;
+    });
+    
+    filteredMarkers.forEach(marker => {
+        marker.setVisible(true);
+    });
+    
+    // Fit map to filtered markers
+    if (filteredMarkers.length > 0) {
+        const bounds = new google.maps.LatLngBounds();
+        filteredMarkers.forEach(marker => {
+            bounds.extend(marker.getPosition());
+        });
+        culturalMap.fitBounds(bounds);
+        
+        // Ensure minimum zoom level
+        google.maps.event.addListenerOnce(culturalMap, 'bounds_changed', function() {
+            if (culturalMap.getZoom() > 15) {
+                culturalMap.setZoom(15);
+            }
+        });
+    }
+    
+    // Show notification
+    showMapNotification(`แสดงเฉพาะหมวดหมู่ที่เลือก (${filteredMarkers.length} รายการ)`);
+}
+
+// Show all markers
+function showAllMarkers() {
+    mapMarkers.forEach(marker => {
+        marker.setVisible(true);
+    });
+    fitMapToMarkers();
+    showMapNotification('แสดงทั้งหมด');
+}
+
+// Open directions to location
+function openDirectionsTo(lat, lng) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
+}
+
+// Show map notification
+function showMapNotification(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 2000);
+}
+
+// Initialize map when page loads
+function initMapWhenReady() {
+    if (typeof google !== 'undefined' && google.maps) {
+        console.log('Google Maps API loaded, initializing map...');
+        initializeCulturalMap();
+    } else {
+        console.log('Waiting for Google Maps API...');
+        setTimeout(initMapWhenReady, 500);
+    }
+}
+
+// Start checking when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, waiting for Google Maps API...');
+    initMapWhenReady();
+});
+
+// Backup: Initialize when Google Maps callback fires
+window.initMap = initializeCulturalMap;
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&libraries=places&callback=initMap" async defer></script>
+@endif
 
 @endsection

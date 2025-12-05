@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ทดสอบ Geolocation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>ทดสอบ Geolocation API</h1>
+    
+    <button onclick="testGeolocation(this)">ทดสอบการค้นหาตำแหน่ง</button>
+    
+    <div id="result"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            resultDiv.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            console.log(message);
+        }
+
+        function testGeolocation(button) {
+            const originalHTML = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = 'กำลังทดสอบ...';
+            
+            document.getElementById('result').innerHTML = '';
+            
+            log('=== เริ่มการทดสอบ ===');
+            log('URL ปัจจุบัน: ' + window.location.href);
+            log('Protocol: ' + window.location.protocol);
+            
+            // ตรวจสอบ HTTPS
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                log('⚠️ เตือน: ไม่ใช่ HTTPS - Geolocation อาจไม่ทำงาน', 'error');
+            }
+            
+            // ตรวจสอบ browser support
+            if (!navigator.geolocation) {
+                log('❌ เบราว์เซอร์ไม่รองรับ Geolocation API', 'error');
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+                return;
+            }
+            
+            log('✓ เบราว์เซอร์รองรับ Geolocation API', 'success');
+            
+            // ขอ permission
+            log('กำลังขอ permission...');
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    log('✓ ได้รับ permission และตำแหน่ง!', 'success');
+                    log('Latitude: ' + position.coords.latitude);
+                    log('Longitude: ' + position.coords.longitude);
+                    log('Accuracy: ' + position.coords.accuracy + ' meters');
+                    log('Timestamp: ' + new Date(position.timestamp).toLocaleString());
+                    
+                    button.innerHTML = '✓ สำเร็จ!';
+                    button.style.background = 'green';
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                        button.style.background = '#007bff';
+                        button.disabled = false;
+                    }, 3000);
+                },
+                function(error) {
+                    log('❌ เกิดข้อผิดพลาด!', 'error');
+                    log('Error code: ' + error.code);
+                    log('Error message: ' + error.message);
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            log('→ ผู้ใช้ปฏิเสธการให้ permission', 'error');
+                            log('→ แก้ไข: อนุญาตการเข้าถึงตำแหน่งในการตั้งค่าเบราว์เซอร์', 'error');
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            log('→ ไม่สามารถหาตำแหน่งได้', 'error');
+                            log('→ แก้ไข: ตรวจสอบ GPS หรือ WiFi', 'error');
+                            break;
+                        case error.TIMEOUT:
+                            log('→ หมดเวลาในการค้นหา', 'error');
+                            log('→ แก้ไข: ลองอีกครั้ง', 'error');
+                            break;
+                    }
+                    
+                    button.innerHTML = originalHTML;
+                    button.disabled = false;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+    </script>
+</body>
+</html>

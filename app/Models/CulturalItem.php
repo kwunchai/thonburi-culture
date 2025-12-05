@@ -14,6 +14,8 @@ class CulturalItem extends Model
         'category_id',
         'community_id',
         'description',
+        'latitude',
+        'longitude',
         'image',
         'publish_date',
         'is_published',

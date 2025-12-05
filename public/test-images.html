@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ทดสอบรูปภาพ - วัฒนธรรมเขตธนบุรี</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; padding: 20px; }
+        .image-test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .image-container { display: flex; gap: 20px; align-items: center; }
+        .image-preview { max-width: 200px; max-height: 150px; border: 1px solid #ccc; }
+        .info { flex: 1; }
+        .url { word-break: break-all; color: #666; font-size: 12px; }
+        .status { font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ ทดสอบการแสดงรูปภาพ</h1>
+    <p>ทดสอบการแสดงรูปภาพของข้อมูลวัฒนธรรม</p>
+
+    <?php
+    // รายการรูปภาพที่ควรมีอยู่ (จากไฟล์ที่เราเห็นใน storage)
+    $testImages = [
+        'cultural-items/3JtZCPOkb9MfE8ASVVxuZ03wk5FHnhtX3Zk6X7lm.jpg',
+        'cultural-items/3XrEvxBbRj3mDayKqX711uv85WEHmpuuhALRqkTT.jpg',
+        'cultural-items/4Pxvt07didzmLrQRyDZwA15NkyrX4AT4FmPhTyba.jpg',
+        'cultural-items/dQixlu9gBBmIWHCGfjGRYVHBVmwkCguqH4XUw9zH.png',
+        'cultural-items/eQXt2OOhxVQWROneJv6qUe4UN6IqZuI9TJcr4bJm.png'
+    ];
+
+    foreach ($testImages as $imagePath) {
+        $fullUrl = '/storage/' . $imagePath;
+        $physicalPath = __DIR__ . '/public/storage/' . $imagePath;
+        $fileExists = file_exists($physicalPath);
+        ?>
+        <div class="image-test">
+            <div class="image-container">
+                <div>
+                    <?php if ($fileExists): ?>
+                        <img src="<?php echo $fullUrl; ?>" alt="ทดสอบรูปภาพ" class="image-preview" 
+                             onerror="this.parentNode.innerHTML='<div style=\'color:red;\'>ไม่สามารถโหลดรูปได้</div>'">
+                    <?php else: ?>
+                        <div style="width: 200px; height: 150px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                            ไม่พบไฟล์
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="info">
+                    <div><strong>ไฟล์:</strong> <?php echo basename($imagePath); ?></div>
+                    <div><strong>URL:</strong> <span class="url"><?php echo $fullUrl; ?></span></div>
+                    <div><strong>Path:</strong> <span class="url"><?php echo $physicalPath; ?></span></div>
+                    <div class="status <?php echo $fileExists ? 'success' : 'error'; ?>">
+                        <strong>สถานะ:</strong> <?php echo $fileExists ? '✓ พบไฟล์' : '❌ ไม่พบไฟล์'; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+    ?>
+
+    <h2>🔍 ข้อมูลการทดสอบ</h2>
+    <ul>
+        <li><strong>เวลาทดสอบ:</strong> <?php echo date('Y-m-d H:i:s'); ?></li>
+        <li><strong>Public Directory:</strong> <?php echo __DIR__ . '/public'; ?></li>
+        <li><strong>Storage Link:</strong> <?php echo __DIR__ . '/public/storage'; ?></li>
+        <li><strong>Storage Link ใช้งานได้:</strong> <?php echo is_dir(__DIR__ . '/public/storage') ? '✓ ใช่' : '❌ ไม่'; ?></li>
+    </ul>
+
+    <h2>💡 หากรูปไม่แสดง</h2>
+    <ol>
+        <li>ตรวจสอบ Console ของ Browser (F12) เพื่อดู error</li>
+        <li>ลองเข้าลิงก์รูปโดยตรง เช่น: <a href="/storage/cultural-items/3JtZCPOkb9MfE8ASVVxuZ03wk5FHnhtX3Zk6X7lm.jpg" target="_blank">ทดสอบลิงก์รูป</a></li>
+        <li>รัน: <code>php artisan storage:link</code></li>
+        <li>ตรวจสอบ permissions ของโฟลเดอร์</li>
+    </ol>
+
+    <script>
+        // ทดสอบการโหลดรูปด้วย JavaScript
+        console.log('🖼️ Testing image loading...');
+        
+        const images = document.querySelectorAll('.image-preview');
+        images.forEach((img, index) => {
+            img.onload = function() {
+                console.log(`✓ Image ${index + 1} loaded successfully: ${this.src}`);
+            };
+            img.onerror = function() {
+                console.error(`❌ Image ${index + 1} failed to load: ${this.src}`);
+            };
+        });
+    </script>
+</body>
+</html>

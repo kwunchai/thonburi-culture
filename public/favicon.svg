@@ -1,0 +1,23 @@
+<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="48" height="48" rx="8" fill="url(#gradient)"/>
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="50%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <!-- Base -->
+  <rect x="4" y="42" width="40" height="3" fill="white" rx="1"/>
+  <!-- Foundation -->
+  <path d="M6 42V38h36v4" fill="white" opacity="0.9"/>
+  <!-- Columns -->
+  <rect x="10" y="18" width="4" height="20" fill="white" rx="1"/>
+  <rect x="18" y="18" width="4" height="20" fill="white" rx="1"/>
+  <rect x="26" y="18" width="4" height="20" fill="white" rx="1"/>
+  <rect x="34" y="18" width="4" height="20" fill="white" rx="1"/>
+  <!-- Top beam -->
+  <rect x="6" y="16" width="36" height="3" fill="white" rx="1"/>
+  <!-- Pediment (triangle roof) -->
+  <path d="M24 4L44 16H4L24 4Z" fill="white"/>
+</svg>
