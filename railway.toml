@@ -1,5 +1,5 @@
 [build]
-buildCommand = "php -r \"file_exists('.env') || copy('.env.example', '.env');\" && composer install --optimize-autoloader --no-dev && php artisan key:generate --ansi"
+buildCommand = "php -r \"file_exists('.env') || copy('.env.example', '.env');\" && composer install --optimize-autoloader --no-dev && npm ci && npm run build && php artisan key:generate --ansi && php artisan config:cache && php artisan route:cache && php artisan view:cache"
 
 [deploy]
 startCommand = "touch /tmp/database.sqlite && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
@@ -15,3 +15,4 @@ DB_CONNECTION = "sqlite"
 DB_DATABASE = "/tmp/database.sqlite"
 SESSION_DRIVER = "file"
 CACHE_DRIVER = "file"
+GOOGLE_MAPS_API_KEY = "AIzaSyDpTWU0_ycLv3rH9evhT-WgAIAVM-2oNog"
