@@ -62,7 +62,8 @@ class HomeStatsController extends Controller
                 'ipTypes' => IntellectualProperty::select('type', DB::raw('COUNT(*) c'))
                     ->groupBy('type')->pluck('c', 'type'), // {"GI":10,"copyright":5,...}
 
-                'topCommunities' => Community::withCount('culturalItems')
+                'topCommunities' => Community::active()  // เฉพาะชุมชนที่เปิดใช้งาน
+                    ->withCount('culturalItems')
                     ->orderByDesc('cultural_items_count')
                     ->take(5)
                     ->get(['id', 'name'])

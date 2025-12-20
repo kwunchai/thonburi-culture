@@ -57,8 +57,8 @@ class ActivityController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'category_id' => 'nullable|exists:activity_categories,id',
             'activity_date' => 'required|date',
             'start_time' => 'nullable|date_format:H:i',
@@ -128,8 +128,8 @@ class ActivityController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'category_id' => 'nullable|exists:activity_categories,id',
             'activity_date' => 'nullable|date',
             'start_time' => 'nullable|date_format:H:i',

@@ -34,6 +34,7 @@ class FrontendController extends Controller
             ->whereRaw('is_featured = 1')  // ใช้ whereRaw เพื่อบังคับ fresh query
             ->where('is_published', 1)
             ->where('publish_date', '<=', now())
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->orderBy('featured_order', 'asc')
             ->orderBy('publish_date', 'desc')
             ->get()
@@ -64,6 +65,7 @@ class FrontendController extends Controller
             $additionalItems = CulturalItem::with(['category', 'community', 'creator'])
                 ->whereNotIn('id', $excludeIds)
                 ->published()
+                ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
                 ->orderBy('publish_date', 'desc')
                 ->take(4 - $featuredItems->count())
                 ->get();
@@ -77,21 +79,27 @@ class FrontendController extends Controller
         //     $query->published();
         // }])->orderBy('name')->get();
         
-        // ดึงข้อมูลวัฒนธรรมล่าสุด (ไม่รวม featured items)
-        $featuredIds = $featuredItems->pluck('id')->toArray();
-        $latestItems = CulturalItem::with(['category', 'community'])
-            ->whereNotIn('id', $featuredIds)
-            ->published()
-            ->orderBy('publish_date', 'desc')
-            ->take(8) // แสดง 8 รายการ
-            ->get();
+        // ดึงข้อมูลวัฒนธรรมล่าสุด
+        // ถ้าข้อมูลมีน้อย (< 12 รายการ) ให้แสดงทั้งหมดโดยไม่ยกเว้น featured
+        // เพื่อให้มั่นใจว่าจะมีข้อมูลแสดงในส่วน "ข้อมูลวัฒนธรรมล่าสุด"
+        $totalPublishedItems = CulturalItem::published()->visibleOnFrontend()->count();
         
-        // ถ้าไม่มีรายการใหม่เลย ให้ดึงรายการทั้งหมดมาแสดง
-        if ($latestItems->count() == 0 && $featuredItems->count() < 8) {
+        if ($totalPublishedItems < 12) {
+            // ถ้าข้อมูลน้อย ดึงทั้งหมดมาแสดง (ไม่ยกเว้น featured)
             $latestItems = CulturalItem::with(['category', 'community'])
                 ->published()
+                ->visibleOnFrontend()
                 ->orderBy('publish_date', 'desc')
-                ->skip(4)
+                ->take(8)
+                ->get();
+        } else {
+            // ถ้าข้อมูลเยอะพอ ให้ยกเว้น featured items
+            $featuredIds = $featuredItems->pluck('id')->toArray();
+            $latestItems = CulturalItem::with(['category', 'community'])
+                ->whereNotIn('id', $featuredIds)
+                ->published()
+                ->visibleOnFrontend()
+                ->orderBy('publish_date', 'desc')
                 ->take(8)
                 ->get();
         }
@@ -103,9 +111,9 @@ class FrontendController extends Controller
         
         // ดึงสถิติสำหรับแสดง
         $stats = [
-            'total_items' => CulturalItem::published()->count(),
+            'total_items' => CulturalItem::published()->visibleOnFrontend()->count(),
             'total_categories' => CulturalCategory::count(),
-            'total_communities' => Community::count(),
+            'total_communities' => Community::active()->count(),
             'total_innovations' => rand(8, 18), // ข้อมูลตัวอย่างสำหรับนวัตกรรม
             'total_research' => rand(15, 25), // ข้อมูลตัวอย่างสำหรับงานวิจัย
             'total_ip' => rand(10, 20), // ข้อมูลตัวอย่างสำหรับทรัพย์สินทางปัญญา
@@ -116,6 +124,7 @@ class FrontendController extends Controller
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->get();
 
         return view('frontend.home', compact(
@@ -140,15 +149,15 @@ class FrontendController extends Controller
 
         // Query builder สำหรับ cultural items
         $query = CulturalItem::with(['category', 'community', 'creator'])
-            ->published();
+            ->published()
+            ->visibleOnFrontend();  // เฉพาะชุมชนที่เปิดใช้งาน
 
         // ค้นหาตามคำค้นหา
+        // ค้นหาเฉพาะใน column ที่มีอยู่จริง: title, description
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('title', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%")
-                  ->orWhere('content', 'LIKE', "%{$search}%")
-                  ->orWhere('tags', 'LIKE', "%{$search}%");
+                  ->orWhere('description', 'LIKE', "%{$search}%");
             });
         }
 
@@ -186,31 +195,33 @@ class FrontendController extends Controller
         // Pagination
         $items = $query->paginate($per_page)->appends($request->query());
 
-        // ข้อมูลสำหรับ filters
+        // ข้อมูลสำหรับ filters - เฉพาะชุมชนที่เปิดใช้งาน
         $categories = CulturalCategory::withCount(['culturalItems' => function($query) {
-            $query->published();
+            $query->published()->visibleOnFrontend();
         }])->orderBy('name')->get();
 
-        $communities = Community::withCount(['culturalItems' => function($query) {
+        $communities = Community::active()->withCount(['culturalItems' => function($query) {
             $query->published();
         }])->orderBy('name')->get();
 
         // สถิติการค้นหา
         $stats = [
             'total_found' => $items->total(),
-            'total_items' => CulturalItem::published()->count(),
+            'total_items' => CulturalItem::published()->visibleOnFrontend()->count(),
             'total_categories' => $categories->count(),
             'total_communities' => $communities->count()
         ];
 
         // รายการที่นิยม (สำหรับ sidebar) - ใช้ random แทน view_count
         $popularItems = CulturalItem::published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->inRandomOrder()
             ->take(5)
             ->get();
 
         // รายการล่าสุด (สำหรับ sidebar)
         $latestItems = CulturalItem::published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->orderBy('publish_date', 'desc')
             ->take(5)
             ->get();
@@ -242,6 +253,7 @@ class FrontendController extends Controller
         $items = $category->culturalItems()
             ->with(['community', 'creator'])
             ->published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->orderBy('publish_date', 'desc')
             ->paginate(12);
         
@@ -256,6 +268,7 @@ class FrontendController extends Controller
         // ดึงรายการยอดนิยม (สุ่ม) ในหมวดหมู่นี้
         $popularItems = $category->culturalItems()
             ->published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->inRandomOrder()
             ->take(5)
             ->get();
@@ -278,11 +291,17 @@ class FrontendController extends Controller
             ->published()
             ->findOrFail($id);
         
+        // ตรวจสอบว่าชุมชนเปิดใช้งานหรือไม่ - ถ้าปิดให้คืน 404
+        if (!$item->community || !$item->community->is_active) {
+            abort(404, 'ไม่พบข้อมูลที่ค้นหา');
+        }
+        
         // ดึงรายการที่เกี่ยวข้อง (ในหมวดหมู่เดียวกัน)
         $relatedItems = CulturalItem::where('category_id', $item->category_id)
             ->where('id', '!=', $id)
             ->with(['community'])
             ->published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->orderBy('publish_date', 'desc')
             ->take(4)
             ->get();
@@ -295,6 +314,7 @@ class FrontendController extends Controller
                 ->whereNotIn('id', $excludeIds)
                 ->with(['category', 'community'])
                 ->published()
+                ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
                 ->orderBy('publish_date', 'desc')
                 ->take(4 - $relatedItems->count())
                 ->get();
@@ -305,11 +325,13 @@ class FrontendController extends Controller
         // ดึงรายการก่อนหน้าและถัดไป
         $previousItem = CulturalItem::where('id', '<', $item->id)
             ->published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->orderBy('id', 'desc')
             ->first();
             
         $nextItem = CulturalItem::where('id', '>', $item->id)
             ->published()
+            ->visibleOnFrontend()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->orderBy('id', 'asc')
             ->first();
 
@@ -329,6 +351,11 @@ class FrontendController extends Controller
         // ดึงข้อมูลชุมชน
         $community = Community::findOrFail($id);
         
+        // ตรวจสอบว่าชุมชนเปิดใช้งานหรือไม่ - ถ้าปิดให้คืน 404
+        if (!$community->is_active) {
+            abort(404, 'ไม่พบข้อมูลชุมชนที่ค้นหา');
+        }
+        
         // ดึงรายการในชุมชน
         $items = $community->culturalItems()
             ->with(['category', 'creator'])
@@ -338,6 +365,7 @@ class FrontendController extends Controller
         
         // ดึงชุมชนอื่นๆ
         $otherCommunities = Community::where('id', '!=', $community->id)
+            ->active()  // เฉพาะชุมชนที่เปิดใช้งาน
             ->withCount(['culturalItems' => function($query) {
                 $query->published();
             }])
@@ -373,7 +401,8 @@ class FrontendController extends Controller
         
         // สร้าง query builder
         $itemsQuery = CulturalItem::with(['category', 'community', 'creator'])
-            ->published();
+            ->published()
+            ->visibleOnFrontend();  // เฉพาะชุมชนที่เปิดใช้งาน
         
         // ค้นหาด้วยคำค้น
         if ($query) {
@@ -409,9 +438,9 @@ class FrontendController extends Controller
         // ดึงผลลัพธ์
         $items = $itemsQuery->paginate(12)->appends($request->all());
         
-        // ดึงข้อมูลสำหรับ filter
+        // ดึงข้อมูลสำหรับ filter - เฉพาะชุมชนที่เปิดใช้งาน
         $categories = CulturalCategory::orderBy('name')->get();
-        $communities = Community::orderBy('name')->get();
+        $communities = Community::active()->orderBy('name')->get();
 
         return view('frontend.search', compact(
             'items', 

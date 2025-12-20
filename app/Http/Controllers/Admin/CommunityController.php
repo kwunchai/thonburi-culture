@@ -82,51 +82,27 @@ class CommunityController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:communities,name',
             'description' => 'nullable|string|max:1000',
-            'address' => 'nullable|string|max:500',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:50',
-            'contact_email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
-            'facebook' => 'nullable|string|max:255',
-            'line_id' => 'nullable|string|max:100',
-            'image' => 'nullable|image|max:4096',
-            'gallery_images.*' => 'nullable|image|max:2048',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
-            'established_year' => 'nullable|integer|min:1000|max:' . date('Y'),
-            'population' => 'nullable|integer|min:0',
+            'established_year' => ['nullable', 'string', 'regex:/^[0-9]{4}$/', function ($attribute, $value, $fail) {
+                if ($value && ((int)$value < 2300 || (int)$value > 2650)) {
+                    $fail('ปีที่ก่อตั้ง (พ.ศ.) ต้องอยู่ระหว่าง 2300 ถึง 2650');
+                }
+            }],
+            'population' => 'nullable|string|max:255',
             'area_size' => 'nullable|numeric|min:0',
             'highlights' => 'nullable|string|max:1000',
-            'working_hours' => 'nullable|string|max:255',
             'is_active' => 'boolean'
         ], [
             'name.required' => 'กรุณาระบุชื่อชุมชน',
             'name.unique' => 'ชื่อชุมชนนี้มีอยู่แล้ว',
-            'image.max' => 'ขนาดรูปภาพต้องไม่เกิน 4MB',
-            'gallery_images.*.max' => 'ขนาดรูปภาพในแกลเลอรี่ต้องไม่เกิน 2MB',
             'latitude.between' => 'ละติจูดต้องอยู่ระหว่าง -90 ถึง 90',
-            'longitude.between' => 'ลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180'
+            'longitude.between' => 'ลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180',
+            'established_year.regex' => 'ปีที่ก่อตั้งต้องเป็นตัวเลข 4 หลักเท่านั้น'
         ]);
-        
-        // จัดการ upload รูปภาพหลัก
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('communities', 'public');
-        }
         
         // สร้างชุมชน
         $community = Community::create($validated);
-        
-        // จัดการ gallery images (ถ้ามี)
-        if ($request->hasFile('gallery_images')) {
-            $gallery = [];
-            foreach ($request->file('gallery_images') as $image) {
-                $path = $image->store('communities/gallery', 'public');
-                $gallery[] = $path;
-            }
-            
-            // บันทึกเป็น JSON ในฐานข้อมูล (ต้องเพิ่ม field gallery_images ใน migration)
-            $community->update(['gallery_images' => json_encode($gallery)]);
-        }
         
         return redirect()->route('admin.communities.index')
             ->with('success', 'เพิ่มข้อมูลชุมชน "' . $community->name . '" เรียบร้อยแล้ว');
@@ -203,64 +179,24 @@ class CommunityController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:communities,name,' . $community->id,
             'description' => 'nullable|string|max:1000',
-            'address' => 'nullable|string|max:500',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:50',
-            'contact_email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
-            'facebook' => 'nullable|string|max:255',
-            'line_id' => 'nullable|string|max:100',
-            'image' => 'nullable|image|max:4096',
-            'gallery_images.*' => 'nullable|image|max:2048',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
-            'established_year' => 'nullable|integer|min:1000|max:' . date('Y'),
-            'population' => 'nullable|integer|min:0',
+            'established_year' => ['nullable', 'string', 'regex:/^[0-9]{4}$/', function ($attribute, $value, $fail) {
+                if ($value && ((int)$value < 2300 || (int)$value > 2650)) {
+                    $fail('ปีที่ก่อตั้ง (พ.ศ.) ต้องอยู่ระหว่าง 2300 ถึง 2650');
+                }
+            }],
+            'population' => 'nullable|string|max:255',
             'area_size' => 'nullable|numeric|min:0',
             'highlights' => 'nullable|string|max:1000',
-            'working_hours' => 'nullable|string|max:255',
             'is_active' => 'boolean'
+        ], [
+            'name.required' => 'กรุณาระบุชื่อชุมชน',
+            'name.unique' => 'ชื่อชุมชนนี้มีอยู่แล้ว',
+            'latitude.between' => 'ละติจูดต้องอยู่ระหว่าง -90 ถึง 90',
+            'longitude.between' => 'ลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180',
+            'established_year.regex' => 'ปีที่ก่อตั้งต้องเป็นตัวเลข 4 หลักเท่านั้น'
         ]);
-        
-        // จัดการรูปภาพหลัก
-        if ($request->hasFile('image')) {
-            // ลบรูปเก่า
-            if ($community->image) {
-                Storage::disk('public')->delete($community->image);
-            }
-            $validated['image'] = $request->file('image')->store('communities', 'public');
-        }
-        
-        // จัดการ gallery images
-        if ($request->hasFile('gallery_images')) {
-            // ลบรูปเก่าในแกลเลอรี่
-            if ($community->gallery_images) {
-                $oldGallery = json_decode($community->gallery_images, true);
-                foreach ($oldGallery as $oldImage) {
-                    Storage::disk('public')->delete($oldImage);
-                }
-            }
-            
-            $gallery = [];
-            foreach ($request->file('gallery_images') as $image) {
-                $path = $image->store('communities/gallery', 'public');
-                $gallery[] = $path;
-            }
-            $validated['gallery_images'] = json_encode($gallery);
-        }
-        
-        // ลบรูปที่เลือกลบ (ถ้ามี)
-        if ($request->has('delete_gallery_images')) {
-            $currentGallery = json_decode($community->gallery_images, true) ?? [];
-            $toDelete = $request->delete_gallery_images;
-            
-            foreach ($toDelete as $imagePath) {
-                Storage::disk('public')->delete($imagePath);
-                $currentGallery = array_diff($currentGallery, [$imagePath]);
-            }
-            
-            $validated['gallery_images'] = json_encode(array_values($currentGallery));
-        }
         
         $community->update($validated);
         
@@ -277,19 +213,6 @@ class CommunityController extends Controller
         if ($community->culturalItems()->count() > 0) {
             return redirect()->route('admin.communities.index')
                 ->with('error', 'ไม่สามารถลบชุมชน "' . $community->name . '" ได้ เนื่องจากมีข้อมูลวัฒนธรรมที่เชื่อมโยงอยู่ ' . $community->culturalItems()->count() . ' รายการ');
-        }
-        
-        // ลบรูปภาพ
-        if ($community->image) {
-            Storage::disk('public')->delete($community->image);
-        }
-        
-        // ลบรูปภาพในแกลเลอรี่
-        if ($community->gallery_images) {
-            $gallery = json_decode($community->gallery_images, true);
-            foreach ($gallery as $image) {
-                Storage::disk('public')->delete($image);
-            }
         }
         
         $communityName = $community->name;
@@ -318,17 +241,6 @@ class CommunityController extends Controller
             if ($community->culturalItems()->count() > 0) {
                 $cannotDelete[] = $community->name;
             } else {
-                // ลบรูปภาพ
-                if ($community->image) {
-                    Storage::disk('public')->delete($community->image);
-                }
-                if ($community->gallery_images) {
-                    $gallery = json_decode($community->gallery_images, true);
-                    foreach ($gallery as $image) {
-                        Storage::disk('public')->delete($image);
-                    }
-                }
-                
                 $deleted[] = $community->name;
                 $community->delete();
             }
@@ -395,13 +307,14 @@ class CommunityController extends Controller
                     'ID',
                     'ชื่อชุมชน',
                     'คำอธิบาย',
-                    'ที่อยู่',
-                    'ผู้ติดต่อ',
-                    'โทรศัพท์',
-                    'อีเมล',
+                    'จุดเด่น',
+                    'ปีที่ก่อตั้ง',
+                    'จำนวนประชากร',
+                    'พื้นที่ (ตร.กม.)',
                     'จำนวนข้อมูลวัฒนธรรม',
                     'ละติจูด',
                     'ลองจิจูด',
+                    'สถานะ',
                     'วันที่สร้าง'
                 ]);
                 
@@ -410,13 +323,14 @@ class CommunityController extends Controller
                         $community->id,
                         $community->name,
                         strip_tags($community->description),
-                        $community->address,
-                        $community->contact_name,
-                        $community->contact_phone,
-                        $community->contact_email,
+                        strip_tags($community->highlights),
+                        $community->established_year,
+                        $community->population,
+                        $community->area_size,
                         $community->cultural_items_count,
                         $community->latitude,
                         $community->longitude,
+                        $community->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน',
                         $community->created_at->format('d/m/Y H:i:s')
                     ]);
                 }

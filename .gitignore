@@ -1,25 +1,107 @@
-*.log
-.DS_Store
+# Environment
 .env
 .env.backup
 .env.production
-.phpactor.json
-.phpunit.result.cache
+*.log
+
+# Dependencies
+/node_modules
+/vendor/phpunit
+/vendor/mockery
+/vendor/pestphp
+/vendor/fakerphp
+/vendor/nunomaduro/collision
+/vendor/laravel/pail
+/vendor/laravel/sail
+
+# Build Tools
+package.json
+package-lock.json
+vite.config.js
+tailwind.config.js
+postcss.config.js
+phpunit.xml
+php-testing.ini
+
+# Testing
+/tests
+
+# IDE
 /.fleet
 /.idea
 /.nova
-/.phpunit.cache
 /.vscode
 /.zed
-/auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
+.phpactor.json
+.phpunit.result.cache
+/.phpunit.cache
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Cache (preserve structure)
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/logs/*.log
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
 /storage/*.key
 /storage/pail
-/thonburi-culture
-/vendor
+
+# Build output (exclude if rebuilding on server)
+# /public/build
+# /public/hot
+
+# Public symlink
+/public/storage
+
+# Deployment
+railway.toml
+railway-sqlite.toml
+nixpacks.toml
+Dockerfile*
+docker-compose.yml
+docker-publish.yml
+.dockerignore
+.railwayignore
+Procfile
+build.sh
+start.sh
+runci-php.yml
+
+# Documentation (keep README only)
+*.md
+!README.md
+
+# Development scripts
+*.bat
+*.ps1
+*.cmd
+*.sh
+test_*.php
+check_*.php
+debug_*.php
+fix_*.php
+add_*.php
+assign_*.php
+compare_*.php
+create_*.php
+deployment_*.php
+final_*.php
+health.php
+quick_*.php
+setup_*.php
+simple_*.php
+update_*.php
+upgrade_*.php
+verify_*.php
+xdebug_config.txt
+
+# Nested directories
+/thonburi-culture/
+/deploy-production/
+/auth.json
 Homestead.json
 Homestead.yaml
-Thumbs.db

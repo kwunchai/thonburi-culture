@@ -134,7 +134,7 @@
                                            class="custom-file-input @error('image') is-invalid @enderror" 
                                            id="image" 
                                            name="image" 
-                                           accept="image/*"
+                                           accept="image/jpeg,image/png,image/jpg,image/gif"
                                            required>
                                     <label class="custom-file-label" for="image">เลือกรูปภาพหลัก...</label>
                                 </div>
@@ -142,13 +142,21 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="form-text text-muted">
-                                    รองรับไฟล์: JPG, PNG, GIF (ขนาดไม่เกิน 2MB)
+                                    <i class="fas fa-info-circle"></i> รองรับไฟล์: JPG, PNG, GIF
                                 </small>
                             </div>
 
                             <!-- Main Image Preview -->
                             <div id="imagePreview" class="mt-3" style="display: none;">
-                                <img id="previewImg" src="#" alt="Preview" class="img-fluid rounded">
+                                <div class="position-relative">
+                                    <img id="previewImg" src="#" alt="Preview" class="img-fluid rounded border">
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute" 
+                                            style="top: 10px; right: 10px;" 
+                                            id="removeMainImage"
+                                            title="ลบรูปภาพ">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -169,7 +177,7 @@
                                            class="custom-file-input @error('additional_images') is-invalid @enderror" 
                                            id="additional_images" 
                                            name="additional_images[]" 
-                                           accept="image/*"
+                                           accept="image/jpeg,image/png,image/jpg,image/gif"
                                            multiple>
                                     <label class="custom-file-label" for="additional_images">เลือกรูปภาพหลายรูป...</label>
                                 </div>
@@ -180,12 +188,12 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="form-text text-muted">
-                                    สามารถเลือกรูปภาพได้หลายรูปพร้อมกัน แต่ละรูปไม่เกิน 2MB
+                                    <i class="fas fa-info-circle"></i> สามารถเลือกรูปภาพได้หลายรูปพร้อมกัน
                                 </small>
                             </div>
 
                             <!-- Additional Images Preview -->
-                            <div id="additionalImagesPreview" class="mt-3">
+                            <div id="additionalImagesPreview" class="mt-3 row">
                                 <!-- Preview images will be shown here -->
                             </div>
                         </div>
@@ -249,39 +257,53 @@
 }
 
 #imagePreview img {
-    max-height: 200px;
+    max-height: 300px;
     width: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #f8f9fa;
+}
+
+#imagePreview {
+    border: 2px dashed #dee2e6;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .additional-image-item {
     position: relative;
-    display: inline-block;
-    margin: 5px;
+    margin-bottom: 15px;
 }
 
 .additional-image-item img {
-    width: 100px;
-    height: 100px;
+    width: 100%;
+    height: 150px;
     object-fit: cover;
     border-radius: 8px;
+    border: 2px solid #dee2e6;
 }
 
 .remove-image-btn {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: 5px;
+    right: 20px;
     background: #dc3545;
     color: white;
     border: none;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+}
+
+.remove-image-btn:hover {
+    background: #c82333;
+    transform: scale(1.1);
 }
 </style>
 @endpush
@@ -289,12 +311,19 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    let additionalImages = [];
+    let additionalImageFiles = [];
 
     // Main image file input change handler
     $('#image').on('change', function(event) {
         const file = event.target.files[0];
         if (file) {
+            // Validate image type
+            if (!file.type.match('image.*')) {
+                alert('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+                this.value = '';
+                return;
+            }
+
             // Update label
             const fileName = file.name;
             $(this).next('.custom-file-label').html(fileName);
@@ -303,32 +332,46 @@ $(document).ready(function() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 $('#previewImg').attr('src', e.target.result);
-                $('#imagePreview').show();
+                $('#imagePreview').slideDown(300);
             }
             reader.readAsDataURL(file);
         } else {
             $(this).next('.custom-file-label').html('เลือกรูปภาพหลัก...');
-            $('#imagePreview').hide();
+            $('#imagePreview').slideUp(300);
         }
+    });
+
+    // Remove main image button
+    $('#removeMainImage').on('click', function() {
+        $('#image').val('');
+        $('#image').next('.custom-file-label').html('เลือกรูปภาพหลัก...');
+        $('#imagePreview').slideUp(300);
     });
 
     // Additional images file input change handler
     $('#additional_images').on('change', function(event) {
         const files = Array.from(event.target.files);
-        const fileNames = files.map(file => file.name).join(', ');
         
         if (files.length > 0) {
-            $(this).next('.custom-file-label').html(files.length + ' รูปถูกเลือก');
+            // Validate all files are images
+            const invalidFiles = files.filter(f => !f.type.match('image.*'));
+            if (invalidFiles.length > 0) {
+                alert('บางไฟล์ไม่ใช่รูปภาพ กรุณาเลือกเฉพาะไฟล์รูปภาพ');
+                this.value = '';
+                return;
+            }
+
+            $(this).next('.custom-file-label').html(files.length + ' ไฟล์ถูกเลือก');
             
-            // Add to additionalImages array
-            files.forEach(file => {
-                additionalImages.push(file);
-            });
+            // Store files
+            additionalImageFiles = files;
             
             // Update preview
             updateAdditionalImagesPreview();
         } else {
             $(this).next('.custom-file-label').html('เลือกรูปภาพหลายรูป...');
+            additionalImageFiles = [];
+            $('#additionalImagesPreview').empty();
         }
     });
 
@@ -336,42 +379,61 @@ $(document).ready(function() {
         const previewContainer = $('#additionalImagesPreview');
         previewContainer.empty();
         
-        additionalImages.forEach((file, index) => {
+        let loadedCount = 0;
+        
+        additionalImageFiles.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const imageItem = $(`
-                    <div class="additional-image-item" data-index="${index}">
-                        <img src="${e.target.result}" alt="Additional Image ${index + 1}">
-                        <button type="button" class="remove-image-btn" onclick="removeAdditionalImage(${index})">
-                            ×
+                const colDiv = $('<div class=\"col-md-4 col-sm-6 additional-image-item\" data-index=\"' + index + '\"></div>');
+                const imgDiv = $(`
+                    <div class=\"position-relative\">
+                        <img src=\"${e.target.result}\" alt=\"รูปที่ ${index + 1}\" class=\"img-fluid\">
+                        <button type=\"button\" class=\"btn btn-danger btn-sm remove-image-btn\" data-index=\"${index}\" title=\"ลบรูปภาพ\">
+                            <i class=\"fas fa-times\"></i>
                         </button>
+                        <div class=\"text-center mt-2 small text-muted\">${file.name}</div>
                     </div>
                 `);
-                previewContainer.append(imageItem);
+                colDiv.append(imgDiv);
+                previewContainer.append(colDiv);
+                
+                loadedCount++;
+                if (loadedCount === additionalImageFiles.length) {
+                    // Attach remove handlers after all images loaded
+                    attachRemoveHandlers();
+                }
             }
             reader.readAsDataURL(file);
         });
     }
 
-    // Make removeAdditionalImage function global
-    window.removeAdditionalImage = function(index) {
-        additionalImages.splice(index, 1);
-        updateAdditionalImagesPreview();
+    function attachRemoveHandlers() {
+        $('.remove-image-btn').off('click').on('click', function() {
+            const index = parseInt($(this).data('index'));
+            removeAdditionalImage(index);
+        });
+    }
+
+    function removeAdditionalImage(index) {
+        // Remove from array
+        additionalImageFiles = Array.from(additionalImageFiles).filter((_, i) => i !== index);
         
-        // Update file input
+        // Update file input with remaining files
         const dt = new DataTransfer();
-        additionalImages.forEach(file => {
+        additionalImageFiles.forEach(file => {
             dt.items.add(file);
         });
         document.getElementById('additional_images').files = dt.files;
         
-        // Update label
-        if (additionalImages.length > 0) {
-            $('#additional_images').next('.custom-file-label').html(additionalImages.length + ' รูปถูกเลือก');
+        // Update label and preview
+        if (additionalImageFiles.length > 0) {
+            $('#additional_images').next('.custom-file-label').html(additionalImageFiles.length + ' ไฟล์ถูกเลือก');
+            updateAdditionalImagesPreview();
         } else {
             $('#additional_images').next('.custom-file-label').html('เลือกรูปภาพหลายรูป...');
+            $('#additionalImagesPreview').empty();
         }
-    };
+    }
 
     // Form validation
     $('#activityForm').on('submit', function(e) {
@@ -379,7 +441,7 @@ $(document).ready(function() {
         
         // Reset previous error states
         $('.form-control').removeClass('is-invalid');
-        $('.invalid-feedback').remove();
+        $('.invalid-feedback:not(.d-block)').remove();
         
         // Validate required fields
         const title = $('#title').val().trim();
@@ -387,14 +449,17 @@ $(document).ready(function() {
         
         if (!title) {
             $('#title').addClass('is-invalid');
-            $('#title').after('<div class="invalid-feedback">กรุณากรอกชื่อกิจกรรม</div>');
+            if (!$('#title').next('.invalid-feedback').length) {
+                $('#title').after('<div class=\"invalid-feedback\">กรุณากรอกชื่อกิจกรรม</div>');
+            }
             isValid = false;
         }
         
         if (!image) {
             $('#image').addClass('is-invalid');
-            if (!$('#image').next().next('.invalid-feedback').length) {
-                $('#image').closest('.form-group').append('<div class="invalid-feedback d-block">กรุณาเลือกรูปภาพหลัก</div>');
+            const group = $('#image').closest('.form-group');
+            if (!group.find('.invalid-feedback.d-block').length) {
+                group.append('<div class=\"invalid-feedback d-block\">กรุณาเลือกรูปภาพหลัก</div>');
             }
             isValid = false;
         }
@@ -405,41 +470,7 @@ $(document).ready(function() {
             $('html, body').animate({
                 scrollTop: $('.is-invalid:first').offset().top - 100
             }, 300);
-        }
-    });
-        }
-    });
-
-    // Form validation
-    $('#activityForm').on('submit', function(e) {
-        let isValid = true;
-        
-        // Check required fields
-        const title = $('#title').val().trim();
-        if (!title) {
-            isValid = false;
-            $('#title').addClass('is-invalid');
-        } else {
-            $('#title').removeClass('is-invalid');
-        }
-        
-        const image = $('#image')[0].files.length;
-        if (!image) {
-            isValid = false;
-            $('#image').addClass('is-invalid');
-            if (!$('#image').next().next('.invalid-feedback').length) {
-                $('<div class="invalid-feedback d-block">กรุณาเลือกรูปภาพ</div>').insertAfter($('#image').parent());
-            }
-        } else {
-            $('#image').removeClass('is-invalid');
-            $('#image').parent().next('.invalid-feedback').remove();
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-            $('html, body').animate({
-                scrollTop: $('.is-invalid').first().offset().top - 100
-            }, 500);
+            return false;
         }
     });
 });

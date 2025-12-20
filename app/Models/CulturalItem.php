@@ -60,4 +60,15 @@ class CulturalItem extends Model
                      ->orderBy('featured_order', 'asc')
                      ->orderBy('publish_date', 'desc');
     }
+
+    /**
+     * Scope: แสดงเฉพาะรายการที่อยู่ในชุมชนที่เปิดใช้งาน
+     * ใช้สำหรับ Frontend เพื่อซ่อนข้อมูลของชุมชนที่ปิดการใช้งาน
+     */
+    public function scopeVisibleOnFrontend($query)
+    {
+        return $query->whereHas('community', function($q) {
+            $q->where('is_active', true);
+        });
+    }
 }

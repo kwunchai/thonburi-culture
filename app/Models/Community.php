@@ -12,22 +12,12 @@ class Community extends Model
     protected $fillable = [
         'name',
         'description',
-        'address',
-        'contact_name',
-        'contact_phone',
-        'contact_email',
-        'website',
-        'facebook',
-        'line_id',
-        'image',
-        'gallery_images',
         'latitude',
         'longitude',
         'established_year',
         'population',
         'area_size',
         'highlights',
-        'working_hours',
         'is_active'
     ];
 
@@ -35,10 +25,10 @@ class Community extends Model
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'area_size' => 'decimal:2',
-        'is_active' => 'boolean',
-        'gallery_images' => 'array',
-        'population' => 'integer',
-        'established_year' => 'integer'
+        'is_active' => 'boolean'
+        // Note: population and established_year are stored as strings to allow flexible input
+        // population can be "1,500-1,800" or "ประมาณ 2,000 คน"
+        // established_year is Buddhist Era year (พ.ศ.) like "2510"
     ];
 
     // Relationships
@@ -60,12 +50,33 @@ class Community extends Model
     }
 
     // Accessors
-    public function getGalleryImagesAttribute($value)
+    /**
+     * Get formatted population display string
+     * Handles both numeric values and text (e.g., "1,500-1,800" or "ประมาณ 2,000 คน")
+     * 
+     * @return string
+     */
+    public function getPopulationDisplayAttribute()
     {
-        if (is_string($value)) {
-            return json_decode($value, true) ?? [];
+        // Handle null/empty
+        if (empty($this->population)) {
+            return '-';
         }
-        return $value ?? [];
+
+        $population = trim($this->population);
+
+        // Check if it's a numeric value (can be integer or numeric string like "1500")
+        if (is_numeric($population)) {
+            return number_format((float)$population) . ' คน';
+        }
+
+        // It's text - check if it already contains "คน"
+        if (str_contains($population, 'คน')) {
+            return $population;
+        }
+
+        // Append " คน" for text values that don't have it
+        return $population . ' คน';
     }
 
     // Methods
@@ -80,15 +91,5 @@ class Community extends Model
             return "https://www.google.com/maps?q={$this->latitude},{$this->longitude}";
         }
         return null;
-    }
-
-    public function getDisplayAddress()
-    {
-        $parts = array_filter([
-            $this->address,
-            'เขตธนบุรี',
-            'กรุงเทพมหานคร'
-        ]);
-        return implode(', ', $parts);
     }
 }

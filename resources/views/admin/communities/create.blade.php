@@ -48,11 +48,11 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>ปีที่ก่อตั้ง (พ.ศ.)</label>
-                                <input type="number" name="established_year" 
+                                <input type="text" name="established_year" 
                                        class="form-control @error('established_year') is-invalid @enderror" 
                                        value="{{ old('established_year') }}"
-                                       min="1000" max="{{ date('Y') + 543 }}"
-                                       placeholder="เช่น 2500">
+                                       placeholder="เช่น 2510">
+                                <small class="form-text text-muted">ระบุปี พ.ศ. (ค.ศ. + 543) เช่น 2510</small>
                                 @error('established_year')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
@@ -61,10 +61,11 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>จำนวนประชากร (คน)</label>
-                                <input type="number" name="population" 
+                                <input type="text" name="population" 
                                        class="form-control @error('population') is-invalid @enderror" 
                                        value="{{ old('population') }}"
-                                       min="0">
+                                       placeholder="เช่น 1,500-1,800 หรือ ประมาณ 2,000 คน">
+                                <small class="form-text text-muted">สามารถระบุเป็นข้อความหรือช่วงได้</small>
                                 @error('population')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
@@ -85,159 +86,10 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Contact Information -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">ข้อมูลติดต่อ</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>ที่อยู่</label>
-                        <textarea name="address" rows="2" 
-                                  class="form-control @error('address') is-invalid @enderror">{{ old('address') }}</textarea>
-                        @error('address')
-                            <span class="invalid-feedback">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>ชื่อผู้ติดต่อ/ประธานชุมชน</label>
-                                <input type="text" name="contact_name" 
-                                       class="form-control @error('contact_name') is-invalid @enderror" 
-                                       value="{{ old('contact_name') }}">
-                                @error('contact_name')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>เบอร์โทรศัพท์</label>
-                                <input type="text" name="contact_phone" 
-                                       class="form-control @error('contact_phone') is-invalid @enderror" 
-                                       value="{{ old('contact_phone') }}"
-                                       placeholder="0X-XXX-XXXX">
-                                @error('contact_phone')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>อีเมล</label>
-                                <input type="email" name="contact_email" 
-                                       class="form-control @error('contact_email') is-invalid @enderror" 
-                                       value="{{ old('contact_email') }}">
-                                @error('contact_email')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>เวลาทำการ/เวลาที่สะดวกติดต่อ</label>
-                                <input type="text" name="working_hours" 
-                                       class="form-control @error('working_hours') is-invalid @enderror" 
-                                       value="{{ old('working_hours') }}"
-                                       placeholder="เช่น จ-ศ 09:00-17:00">
-                                @error('working_hours')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>เว็บไซต์</label>
-                                <input type="url" name="website" 
-                                       class="form-control @error('website') is-invalid @enderror" 
-                                       value="{{ old('website') }}"
-                                       placeholder="https://">
-                                @error('website')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Facebook</label>
-                                <input type="text" name="facebook" 
-                                       class="form-control @error('facebook') is-invalid @enderror" 
-                                       value="{{ old('facebook') }}"
-                                       placeholder="facebook.com/...">
-                                @error('facebook')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Line ID</label>
-                                <input type="text" name="line_id" 
-                                       class="form-control @error('line_id') is-invalid @enderror" 
-                                       value="{{ old('line_id') }}"
-                                       placeholder="@...">
-                                @error('line_id')
-                                    <span class="invalid-feedback">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- Right Column -->
         <div class="col-lg-4">
-            <!-- Images -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">รูปภาพ</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>รูปภาพหลัก</label>
-                        <div class="custom-file">
-                            <input type="file" name="image" 
-                                   class="custom-file-input @error('image') is-invalid @enderror" 
-                                   id="mainImage"
-                                   accept="image/*">
-                            <label class="custom-file-label" for="mainImage">เลือกรูปภาพ</label>
-                            @error('image')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        <small class="text-muted">รองรับ: JPG, PNG, GIF (ไม่เกิน 4MB)</small>
-                        <div id="mainImagePreview" class="mt-3"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>รูปภาพเพิ่มเติม (Gallery)</label>
-                        <div class="custom-file">
-                            <input type="file" name="gallery_images[]" 
-                                   class="custom-file-input @error('gallery_images.*') is-invalid @enderror" 
-                                   id="galleryImages"
-                                   accept="image/*"
-                                   multiple>
-                            <label class="custom-file-label" for="galleryImages">เลือกหลายรูป</label>
-                            @error('gallery_images.*')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        <small class="text-muted">เลือกได้หลายรูป (แต่ละรูปไม่เกิน 2MB)</small>
-                        <div id="galleryPreview" class="mt-3 row"></div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Location -->
             <div class="card">
                 <div class="card-header">
@@ -320,44 +172,6 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('maps.api_key') }}&callback=initMap" async defer></script>
 
 <script>
-// Image preview
-document.getElementById('mainImage').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('mainImagePreview').innerHTML = 
-                '<img src="' + e.target.result + '" class="img-fluid rounded">';
-        }
-        reader.readAsDataURL(file);
-        
-        // Update label
-        e.target.nextElementSibling.textContent = file.name;
-    }
-});
-
-// Gallery preview
-document.getElementById('galleryImages').addEventListener('change', function(e) {
-    const files = e.target.files;
-    const preview = document.getElementById('galleryPreview');
-    preview.innerHTML = '';
-    
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML += 
-                '<div class="col-4 mb-2">' +
-                '<img src="' + e.target.result + '" class="img-fluid rounded">' +
-                '</div>';
-        }
-        reader.readAsDataURL(file);
-    }
-    
-    // Update label
-    e.target.nextElementSibling.textContent = files.length + ' ไฟล์ที่เลือก';
-});
-
 // Map
 let map;
 let marker;

@@ -23,12 +23,17 @@
                 </div>
             </div>
             <div class="card-body">
-                @if($community->image)
-                <div class="text-center mb-4">
-                    <img src="{{ Storage::url($community->image) }}" 
-                         alt="{{ $community->name }}"
-                         class="img-fluid rounded shadow-sm"
-                         style="max-height: 400px;">
+                @if($community->description)
+                <div class="mb-3">
+                    <h5>คำอธิบาย</h5>
+                    <p>{{ $community->description }}</p>
+                </div>
+                @endif
+                
+                @if($community->highlights)
+                <div class="mb-3">
+                    <h5>จุดเด่น/ไฮไลท์</h5>
+                    <p>{{ $community->highlights }}</p>
                 </div>
                 @endif
                 
@@ -41,123 +46,39 @@
                             </tr>
                             <tr>
                                 <th>จำนวนประชากร:</th>
-                                <td>{{ $community->population ? number_format($community->population) . ' คน' : '-' }}</td>
+                                <td>{{ $community->population_display }}</td>
                             </tr>
                             <tr>
                                 <th>พื้นที่:</th>
                                 <td>{{ $community->area_size ? number_format($community->area_size, 2) . ' ตร.กม.' : '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>เวลาทำการ:</th>
-                                <td>{{ $community->working_hours ?? '-' }}</td>
                             </tr>
                         </table>
                     </div>
                     <div class="col-md-6">
                         <table class="table table-sm">
                             <tr>
-                                <th style="width: 30%">ผู้ติดต่อ:</th>
-                                <td>{{ $community->contact_name ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <th>โทรศัพท์:</th>
+                                <th style="width: 30%">สถานะ:</th>
                                 <td>
-                                    @if($community->contact_phone)
-                                    <a href="tel:{{ $community->contact_phone }}">{{ $community->contact_phone }}</a>
+                                    @if($community->is_active)
+                                    <span class="badge badge-success">เปิดใช้งาน</span>
                                     @else
-                                    -
+                                    <span class="badge badge-danger">ปิดใช้งาน</span>
                                     @endif
                                 </td>
                             </tr>
                             <tr>
-                                <th>อีเมล:</th>
-                                <td>
-                                    @if($community->contact_email)
-                                    <a href="mailto:{{ $community->contact_email }}">{{ $community->contact_email }}</a>
-                                    @else
-                                    -
-                                    @endif
-                                </td>
+                                <th>วันที่สร้าง:</th>
+                                <td>{{ $community->created_at->format('d/m/Y H:i') }}</td>
                             </tr>
                             <tr>
-                                <th>เว็บไซต์:</th>
-                                <td>
-                                    @if($community->website)
-                                    <a href="{{ $community->website }}" target="_blank">{{ Str::limit($community->website, 30) }}</a>
-                                    @else
-                                    -
-                                    @endif
-                                </td>
+                                <th>อัปเดตล่าสุด:</th>
+                                <td>{{ $community->updated_at->format('d/m/Y H:i') }}</td>
                             </tr>
                         </table>
                     </div>
                 </div>
-                
-                @if($community->description)
-                <div class="mt-3">
-                    <h5>คำอธิบาย</h5>
-                    <p>{{ $community->description }}</p>
-                </div>
-                @endif
-                
-                @if($community->highlights)
-                <div class="mt-3">
-                    <h5>จุดเด่น/ไฮไลท์</h5>
-                    <p>{{ $community->highlights }}</p>
-                </div>
-                @endif
-                
-                @if($community->address)
-                <div class="mt-3">
-                    <h5>ที่อยู่</h5>
-                    <p>{{ $community->getDisplayAddress() }}</p>
-                </div>
-                @endif
-                
-                <!-- Social Media -->
-                @if($community->facebook || $community->line_id)
-                <div class="mt-3">
-                    <h5>โซเชียลมีเดีย</h5>
-                    @if($community->facebook)
-                    <a href="{{ $community->facebook }}" target="_blank" class="btn btn-primary btn-sm mr-2">
-                        <i class="fab fa-facebook"></i> Facebook
-                    </a>
-                    @endif
-                    @if($community->line_id)
-                    <span class="badge badge-success">
-                        <i class="fab fa-line"></i> Line: {{ $community->line_id }}
-                    </span>
-                    @endif
-                </div>
-                @endif
             </div>
         </div>
-        
-        <!-- Gallery -->
-        @php
-            $galleryImages = is_string($community->gallery_images) 
-                ? json_decode($community->gallery_images, true) 
-                : $community->gallery_images;
-        @endphp
-        @if(!empty($galleryImages) && is_array($galleryImages) && count($galleryImages) > 0)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">รูปภาพเพิ่มเติม</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    @foreach($galleryImages as $image)
-                    <div class="col-md-4 mb-3">
-                        <a href="{{ Storage::url($image) }}" target="_blank">
-                            <img src="{{ Storage::url($image) }}" 
-                                 class="img-fluid rounded shadow-sm">
-                        </a>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-        @endif
         
         <!-- Cultural Items -->
         <div class="card">

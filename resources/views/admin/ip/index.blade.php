@@ -231,6 +231,16 @@
             </a>
         </div>
         <div class="btn-group ml-2">
+            <a href="{{ route('admin.ip.import.form') }}" class="btn btn-success">
+                <i class="fas fa-file-import"></i> นำเข้าจาก Excel
+            </a>
+        </div>
+        <div class="btn-group ml-2">
+            <button type="button" class="btn btn-outline-danger" id="bulkDeleteBtn" style="display:none;" onclick="event.preventDefault(); confirmBulkDelete(); return false;">
+                <i class="fas fa-trash-alt"></i> ลบรายการที่เลือก (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+        <div class="btn-group ml-2">
             <button type="button" class="btn btn-outline-info dropdown-toggle" data-toggle="dropdown">
                 <i class="fas fa-download"></i> ส่งออกข้อมูล
             </button>
@@ -245,22 +255,41 @@
 
 <!-- Data Table -->
 @if($items->count() > 0)
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th><i class="fas fa-id-card"></i> เลขทะเบียน</th>
-                        <th><i class="fas fa-file-alt"></i> ชื่อเรื่อง</th>
-                        <th><i class="fas fa-tag"></i> ประเภท</th>
-                        <th><i class="fas fa-info-circle"></i> สถานะ</th>
-                        <th><i class="fas fa-calendar"></i> วันที่ลงทะเบียน</th>
-                        <th class="text-center" width="150"><i class="fas fa-cogs"></i> การจัดการ</th>
-                    </tr>
-                </thead>
+    <form id="bulkDeleteForm" action="{{ route('admin.ip.bulk-destroy') }}" method="POST">
+        @csrf
+        <!-- Hidden submit button for bulk delete -->
+        <button type="submit" id="bulkDeleteSubmit" style="display: none;"></button>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th width="30">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="selectAll">
+                                    <label class="custom-control-label" for="selectAll"></label>
+                                </div>
+                            </th>
+                            <th><i class="fas fa-id-card"></i> เลขทะเบียน</th>
+                            <th><i class="fas fa-file-alt"></i> ชื่อเรื่อง</th>
+                            <th><i class="fas fa-tag"></i> ประเภท</th>
+                            <th><i class="fas fa-info-circle"></i> สถานะ</th>
+                            <th><i class="fas fa-calendar"></i> วันที่ลงทะเบียน</th>
+                            <th class="text-center" width="150"><i class="fas fa-cogs"></i> การจัดการ</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         @foreach($items as $item)
                             <tr>
+                                <td>
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input row-checkbox" 
+                                               id="check{{ $item->ip_id }}" 
+                                               name="selected_ids[]" 
+                                               value="{{ $item->ip_id }}">
+                                        <label class="custom-control-label" for="check{{ $item->ip_id }}"></label>
+                                    </div>
+                                </td>
                                 <td>
                                     <span class="badge badge-secondary">
                                         {{ $item->registration_number ?: 'ยังไม่มี' }}
@@ -340,6 +369,7 @@
                 </table>
             </div>
         </div>
+    </form>
     @else
         <div class="card">
             <div class="card-body text-center py-5">
@@ -415,12 +445,164 @@
     </div>
 @endif
 
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show mt-3">
-        <i class="fas fa-check-circle"></i> {{ session('success') }}
-        <button type="button" class="close" data-dismiss="alert">
-            <span>&times;</span>
-        </button>
-    </div>
-@endif
+{{-- Flash messages now centralized in layout --}}
 @endsection
+
+@push('scripts')
+<script>
+console.log('IP Bulk Delete Scripts Loaded');
+console.log('Form exists:', document.getElementById('bulkDeleteForm') !== null);
+console.log('Button exists:', document.getElementById('bulkDeleteBtn') !== null);
+
+// Select All Functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    updateBulkDeleteButton();
+});
+
+// Individual Checkbox Change
+document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        updateBulkDeleteButton();
+        updateSelectAllState();
+    });
+});
+
+// Update Bulk Delete Button Visibility
+function updateBulkDeleteButton() {
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (checkedBoxes.length > 0) {
+        bulkDeleteBtn.style.display = 'inline-block';
+        selectedCount.textContent = checkedBoxes.length;
+    } else {
+        bulkDeleteBtn.style.display = 'none';
+    }
+}
+
+// Update Select All Checkbox State
+function updateSelectAllState() {
+    const allCheckboxes = document.querySelectorAll('.row-checkbox');
+    const checkedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    
+    if (checkedCheckboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (checkedCheckboxes.length === allCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+}
+
+// Confirm Bulk Delete
+function confirmBulkDelete() {
+    console.log('confirmBulkDelete called');
+    
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    console.log('Checked boxes:', checkedBoxes.length);
+    
+    if (checkedBoxes.length === 0) {
+        alert('กรุณาเลือกรายการที่ต้องการลบ');
+        return false;
+    }
+    
+    const form = document.getElementById('bulkDeleteForm');
+    console.log('Form element:', form);
+    console.log('Form action:', form ? form.action : 'FORM NOT FOUND');
+    console.log('Form method:', form ? form.method : 'FORM NOT FOUND');
+    
+    if (!form) {
+        console.error('Bulk delete form not found!');
+        alert('เกิดข้อผิดพลาด: ไม่พบฟอร์มลบข้อมูล');
+        return false;
+    }
+    
+    const count = checkedBoxes.length;
+    const message = `คุณแน่ใจหรือไม่ที่จะลบทรัพย์สินทางปัญญา ${count} รายการ?\n\nการดำเนินการนี้ไม่สามารถย้อนกลับได้`;
+    
+    if (confirm(message)) {
+        console.log('User confirmed, submitting form via fetch...');
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('input[name="_token"]').value;
+        
+        // Get selected IDs
+        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+        console.log('Selected IDs:', selectedIds);
+        console.log('CSRF Token:', csrfToken);
+        console.log('Form action URL:', form.action);
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('_token', csrfToken);
+        selectedIds.forEach(id => {
+            formData.append('selected_ids[]', id);
+        });
+        
+        // Show loading state
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const originalText = bulkDeleteBtn.innerHTML;
+        bulkDeleteBtn.disabled = true;
+        bulkDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังลบ...';
+        
+        // Submit via fetch
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Response received:', response);
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            // Check if we got redirected (302/303)
+            if (response.redirected) {
+                console.log('Redirected to:', response.url);
+                window.location.href = response.url;
+                return;
+            }
+            
+            // Parse JSON response
+            return response.json().then(data => {
+                console.log('Response data:', data);
+                
+                if (response.ok && data.success) {
+                    // Success - reload page to show updated list
+                    window.location.href = "{{ route('admin.ip.index') }}";
+                } else {
+                    // Error
+                    bulkDeleteBtn.disabled = false;
+                    bulkDeleteBtn.innerHTML = originalText;
+                    alert(data.message || 'เกิดข้อผิดพลาด: ' + response.statusText);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            bulkDeleteBtn.disabled = false;
+            bulkDeleteBtn.innerHTML = originalText;
+            alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + error.message);
+        });
+        
+        return true;
+    }
+    
+    console.log('User cancelled');
+    return false;
+}
+</script>
+@endpush

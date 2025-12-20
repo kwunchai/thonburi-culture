@@ -19,9 +19,12 @@ class CommunityFactory extends Factory
         return [
             'name' => fake()->company(),
             'description' => fake()->paragraph(),
-            'address' => fake()->streetAddress(),
             'latitude' => fake()->latitude(13.5, 14.0),
             'longitude' => fake()->longitude(100.3, 100.7),
+            'established_year' => fake()->numberBetween(1950, 2020),
+            'population' => fake()->numberBetween(1000, 50000),
+            'area_size' => fake()->randomFloat(2, 1, 100),
+            'highlights' => fake()->sentence(),
             'is_active' => true,
         ];
     }

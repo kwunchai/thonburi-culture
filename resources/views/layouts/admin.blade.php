@@ -79,6 +79,16 @@
 
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+                    {{-- Dashboard - all users can access --}}
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>แดชบอร์ด</p>
+                        </a>
+                    </li>
+
+                    {{-- Slideshow Management - admin and editor only --}}
+                    @can('manage-slideshow')
                     <li class="nav-item">
                         <a href="{{ route('admin.slideshow.index') }}" 
                             class="nav-link {{ request()->routeIs('admin.slideshow.*') ? 'active' : '' }}">
@@ -92,14 +102,10 @@
                             </p>
                         </a>
                     </li>
-
-                    <li class="nav-item">
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>แดชบอร์ด</p>
-                        </a>
-                    </li>
+                    @endcan
                     
+                    {{-- Communities - admin and editor only --}}
+                    @can('manage-communities')
                     <li class="nav-item">
                         <a href="{{ route('admin.communities.index') }}" 
                         class="nav-link {{ request()->routeIs('admin.communities.*') ? 'active' : '' }}">
@@ -113,14 +119,20 @@
                             </p>
                         </a>
                     </li>
+                    @endcan
                     
+                    {{-- Cultural Items - admin and editor only --}}
+                    @can('manage-cultural-items')
                     <li class="nav-item">
                         <a href="{{ route('admin.cultural-items.index') }}" class="nav-link {{ request()->routeIs('admin.cultural-items.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-landmark"></i>
                             <p>ข้อมูลวัฒนธรรม</p>
                         </a>
                     </li>
+                    @endcan
 
+                    {{-- Activities - admin and editor only --}}
+                    @can('manage-activities')
                     <li class="nav-item">
                         <a href="{{ route('admin.activities.index') }}" 
                            class="nav-link {{ request()->routeIs('admin.activities.*') ? 'active' : '' }}">
@@ -148,8 +160,10 @@
                             </p>
                         </a>
                     </li>
+                    @endcan
 
-                    {{-- ข้อมูลงานวิจัย --}}
+                    {{-- Research - admin and editor only (placeholder) --}}
+                    @can('manage-research')
                     <li class="nav-item">
                         <a href="#" 
                             class="nav-link {{ request()->routeIs('admin.research.*') ? 'active' : '' }}">
@@ -157,25 +171,27 @@
                             <p>ข้อมูลงานวิจัย</p>
                         </a>
                     </li>
+                    @endcan
 
-                    {{-- ทรัพย์สินทางปัญญา --}}
-                    @if(auth()->user() && in_array(auth()->user()->role, ['admin', 'ip_manager']))
-                        <li class="nav-item">
-                            <a href="{{ route('admin.ip.index') }}" 
-                                class="nav-link {{ request()->routeIs('admin.ip.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-certificate"></i>
-                                <p>
-                                    ทรัพย์สินทางปัญญา
-                                    @php
-                                    $ipCount = \App\Models\IntellectualProperty::count();
-                                    @endphp
-                                    <span class="badge badge-primary right">{{ $ipCount }}</span>
-                                </p>
-                            </a>
-                        </li>
-                    @endif
+                    {{-- Intellectual Property - admin and ip_manager only --}}
+                    @can('manage-ip')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.ip.index') }}" 
+                            class="nav-link {{ request()->routeIs('admin.ip.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-certificate"></i>
+                            <p>
+                                ทรัพย์สินทางปัญญา
+                                @php
+                                $ipCount = \App\Models\IntellectualProperty::count();
+                                @endphp
+                                <span class="badge badge-primary right">{{ $ipCount }}</span>
+                            </p>
+                        </a>
+                    </li>
+                    @endcan
 
-                    {{-- ข้อมูลนวัตกรรมที่จดทรัพย์สินทางปัญญา --}}
+                    {{-- Innovations - admin and editor only (placeholder) --}}
+                    @can('manage-innovations')
                     <li class="nav-item">
                         <a href="#" 
                             class="nav-link {{ request()->routeIs('admin.innovations.*') ? 'active' : '' }}">
@@ -183,17 +199,10 @@
                             <p>ข้อมูลนวัตกรรม</p>
                         </a>
                     </li>
+                    @endcan
 
-                    {{-- ปักหมุดสถานที่ --}}
-                    <li class="nav-item">
-                        <a href="#" 
-                            class="nav-link {{ request()->routeIs('admin.places.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-map-pin"></i>
-                            <p>ปักหมุดสถานที่</p>
-                        </a>
-                    </li>
-
-                    {{-- จัดการสิทธิ์ผู้ใช้งาน --}}
+                    {{-- User Management - admin only --}}
+                    @can('manage-users')
                     <li class="nav-item">
                         <a href="{{ route('admin.users.index') }}" 
                             class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
@@ -207,7 +216,7 @@
                             </p>
                         </a>
                     </li>
-
+                    @endcan
                                         
                 </ul>
             </nav>
@@ -224,11 +233,8 @@
 
         <section class="content">
             <div class="container-fluid">
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
+                {{-- Centralized Flash Messages --}}
+                @include('admin.partials.flash')
                 
                 @yield('content')
             </div>
@@ -243,6 +249,30 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<script>
+// Remove hold-transition class after page loads to prevent dark overlay
+$(document).ready(function() {
+    // Remove hold-transition class immediately
+    $('body').removeClass('hold-transition');
+    
+    // Safety fallback: remove any stuck modal backdrops
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open').css('padding-right', '');
+    
+    // Initialize AdminLTE properly
+    if (typeof AdminLTE !== 'undefined') {
+        AdminLTE.Layout && AdminLTE.Layout.activate();
+    }
+});
+
+// Additional safety on window load
+$(window).on('load', function() {
+    $('body').removeClass('hold-transition');
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open').css('padding-right', '');
+});
+</script>
 
 @stack('scripts')
 </body>

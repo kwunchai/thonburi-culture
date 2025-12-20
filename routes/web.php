@@ -112,49 +112,68 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ===================================================================
+// Admin Routes - Protected by role-based permissions
+// ===================================================================
+
+// Dashboard - accessible by all admin panel users (admin, editor, ip_manager, viewer)
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard Routes
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    
-        // Cultural Items Routes
+});
+
+// Cultural Items - admin and editor only
+Route::middleware(['auth', 'verified', 'admin', 'permission:manage-cultural-items'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('cultural-items/export', [CulturalItemController::class, 'export'])->name('cultural-items.export');
     Route::post('cultural-items/{culturalItem}/toggle-featured', [CulturalItemController::class, 'toggleFeatured'])->name('cultural-items.toggle-featured');
     Route::post('cultural-items/bulk-action', [CulturalItemController::class, 'bulkAction'])->name('cultural-items.bulk-action');
-    Route::resource('cultural-items', CulturalItemController::class);   
+    Route::resource('cultural-items', CulturalItemController::class);
     
-    // Slideshow Management (using resource)
-    Route::resource('slideshow', SlideshowController::class)->except(['show']); // No show method needed for slideshows
+    // Cultural Categories Management
+    Route::resource('cultural-categories', CulturalCategoryController::class);
+});
+
+// Slideshow Management - admin and editor only
+Route::middleware(['auth', 'verified', 'admin', 'permission:manage-slideshow'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('slideshow', SlideshowController::class)->except(['show']);
     Route::post('slideshow/{id}/toggle-featured', [SlideshowController::class, 'toggleFeatured'])->name('slideshow.toggle-featured');
     Route::post('slideshow/update-order', [SlideshowController::class, 'updateOrder'])->name('slideshow.update-order');
+});
 
-    // Community Management (using resource)
+// Community Management - admin and editor only
+Route::middleware(['auth', 'verified', 'admin', 'permission:manage-communities'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('communities', CommunityController::class);
-    // Additional community routes
     Route::delete('communities/bulk-delete', [CommunityController::class, 'bulkDelete'])->name('communities.bulk-delete');
     Route::get('communities/export/csv', [CommunityController::class, 'export'])->name('communities.export');
     Route::post('communities/{community}/toggle-active', [CommunityController::class, 'toggleActive'])->name('communities.toggle-active');
     Route::post('communities/{community}/update-location', [CommunityController::class, 'updateLocation'])->name('communities.update-location');
+});
 
-    // Cultural Categories Management
-    Route::resource('cultural-categories', CulturalCategoryController::class);
-
-    // Activities Management
+// Activities Management - admin and editor only
+Route::middleware(['auth', 'verified', 'admin', 'permission:manage-activities'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('activities', AdminActivityController::class);
     Route::post('activities/{activity}/toggle-status', [AdminActivityController::class, 'toggleStatus'])->name('activities.toggle-status');
     
-    // Activity Categories Management  
     Route::resource('activity-categories', ActivityCategoryController::class);
     Route::post('activity-categories/{activityCategory}/toggle-status', [ActivityCategoryController::class, 'toggleStatus'])->name('activity-categories.toggle-status');
-    
-    // User Management (using resource)
+});
+
+// User Management - admin only
+Route::middleware(['auth', 'verified', 'admin', 'permission:manage-users'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::patch('users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
-// Intellectual Property Management - separate middleware for IP managers
-Route::middleware(['auth', 'verified', 'ip.permission'])->prefix('admin')->name('admin.')->group(function () {
+// Intellectual Property Management - admin and ip_manager only
+Route::middleware(['auth', 'verified', 'admin', 'permission:manage-ip'])->prefix('admin')->name('admin.')->group(function () {
+    // Custom routes must come BEFORE resource routes to prevent route conflicts
+    Route::get('ip/import', [IntellectualPropertyController::class, 'showImportForm'])->name('ip.import.form');
+    Route::post('ip/import', [IntellectualPropertyController::class, 'import'])->name('ip.import');
+    Route::get('ip/import/template', [IntellectualPropertyController::class, 'downloadTemplate'])->name('ip.import.template');
     Route::get('ip/export', [IntellectualPropertyController::class, 'export'])->name('ip.export');
+    Route::post('ip/bulk-destroy', [IntellectualPropertyController::class, 'bulkDestroy'])->name('ip.bulk-destroy');
+    
+    // Resource routes (these include wildcards that can conflict with custom routes)
     Route::resource('ip', IntellectualPropertyController::class);
 });
 

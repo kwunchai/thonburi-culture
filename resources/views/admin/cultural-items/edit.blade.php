@@ -71,16 +71,18 @@
                 <div class="row">
                     <div class="col-md-6">
                         <label for="latitude">ละติจูด</label>
-                        <input type="number" step="any" name="latitude" id="latitude" class="form-control @error('latitude') is-invalid @enderror" 
-                               value="{{ old('latitude', $culturalItem->latitude ?? config('maps.default_coordinates.latitude')) }}" readonly>
+                        <input type="number" step="0.00000001" name="latitude" id="latitude" class="form-control @error('latitude') is-invalid @enderror" 
+                               value="{{ old('latitude', $culturalItem->latitude ?? config('maps.default_coordinates.latitude')) }}" 
+                               placeholder="13.7563">
                         @error('latitude')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
                     </div>
                     <div class="col-md-6">
                         <label for="longitude">ลองจิจูด</label>
-                        <input type="number" step="any" name="longitude" id="longitude" class="form-control @error('longitude') is-invalid @enderror" 
-                               value="{{ old('longitude', $culturalItem->longitude ?? config('maps.default_coordinates.longitude')) }}" readonly>
+                        <input type="number" step="0.00000001" name="longitude" id="longitude" class="form-control @error('longitude') is-invalid @enderror" 
+                               value="{{ old('longitude', $culturalItem->longitude ?? config('maps.default_coordinates.longitude')) }}" 
+                               placeholder="100.5018">
                         @error('longitude')
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
